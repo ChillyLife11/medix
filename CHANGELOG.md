@@ -5,7 +5,7 @@
 Формат — [Keep a Changelog 1.0.0](https://keepachangelog.com/en/1.0.0/),
 версионирование — [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.1] - 2026-08-15
 
 ### Added
 
