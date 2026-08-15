@@ -234,6 +234,9 @@ c `source: "max"`, `branch_id: 1`, датой `YYYY-MM-DD` и `start` из вы�
 - При добавлении API-слоя: держать `company_id` и base-URL в одном месте (env +
   модуль-конфиг), токен — как в оригинале, но абстрагировать под мессенджер-агностик.
 - Соблюдать prettier-настройки (табы, без `;`, одинарные кавычки).
+- **Заголовки коммитов — всегда на английском**, в стиле Conventional Commits
+  (`feat(datetime): ...`, `fix(api): ...`, `docs(changelog): ...`). Тело коммита
+  можно писать по-русски.
 - **`CHANGELOG.md` ведём по стандарту [Keep a Changelog 1.0.0](https://keepachangelog.com/en/1.0.0/)**
   и SemVer: заголовок версии `## [x.y.z] - YYYY-MM-DD`, английские названия секций
   (`Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`) — своих секций
