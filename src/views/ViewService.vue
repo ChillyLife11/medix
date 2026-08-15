@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { RadioGroupRoot, RadioGroupItem } from 'reka-ui'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
+import UiLoader from '@/components/ui/UiLoader.vue'
 import { getCoworkers } from '@/api/coworkers'
 import { useBooking } from '@/composables/useBooking'
 
@@ -49,9 +50,7 @@ function submit() {
 	<div class="min-h-screen flex flex-col p-2.5">
 		<UiPageTitle>Выбрать услугу</UiPageTitle>
 
-		<div v-if="loading" class="space-y-2.5">
-			<div v-for="i in 4" :key="i" class="h-20 rounded-4xl bg-card animate-pulse" />
-		</div>
+		<UiLoader v-if="loading" label="Загружаем услуги" />
 
 		<div v-else-if="failed" class="p-5 rounded-4xl bg-card text-15 text-gray">
 			Не удалось загрузить услуги. Попробуйте позже.

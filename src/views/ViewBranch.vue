@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { RadioGroupRoot, RadioGroupItem } from 'reka-ui'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
+import UiLoader from '@/components/ui/UiLoader.vue'
 import { getBranches } from '@/api/branches'
 import { useBooking } from '@/composables/useBooking'
 
@@ -37,9 +38,7 @@ function submit() {
 	<div class="min-h-screen flex flex-col p-2.5">
 		<UiPageTitle>Выбрать филиал</UiPageTitle>
 
-		<div v-if="loading" class="grid grid-cols-2 gap-2.5">
-			<div v-for="i in 2" :key="i" class="h-22.75 rounded-4xl bg-card animate-pulse" />
-		</div>
+		<UiLoader v-if="loading" label="Загружаем филиалы" />
 
 		<div v-else-if="failed" class="p-5 rounded-4xl bg-card text-15 text-gray">
 			Не удалось загрузить филиалы. Попробуйте позже.
