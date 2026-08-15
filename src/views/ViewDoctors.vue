@@ -3,12 +3,13 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
+import UiLoader from '@/components/ui/UiLoader.vue'
 import DoctorCard from '@/components/doctor/DoctorCard.vue'
 import { getCoworkers } from '@/api/coworkers'
 import { useBooking } from '@/composables/useBooking'
 
 const router = useRouter()
-const { serviceId, doctorId } = useBooking()
+const { serviceId, masterId } = useBooking()
 
 const doctors = ref([])
 const loading = ref(true)
@@ -28,7 +29,7 @@ const providesService = (coworker) =>
 onMounted(async () => {
 	try {
 		doctors.value = (await getCoworkers()).filter(providesService)
-		selected.value = doctorId.value ?? doctors.value[0]?.id ?? null
+		selected.value = masterId.value ?? doctors.value[0]?.id ?? null
 	} catch (e) {
 		console.warn('[doctors] coworker/index failed', e)
 		failed.value = true
@@ -38,7 +39,7 @@ onMounted(async () => {
 })
 
 function submit() {
-	doctorId.value = selected.value
+	masterId.value = selected.value
 	router.push('/datetime')
 }
 </script>
@@ -47,9 +48,7 @@ function submit() {
 	<div class="min-h-screen flex flex-col p-2.5">
 		<UiPageTitle>Выбрать врача</UiPageTitle>
 
-		<div v-if="loading" class="space-y-4">
-			<div v-for="i in 3" :key="i" class="h-37 rounded-[30px] bg-card animate-pulse" />
-		</div>
+		<UiLoader v-if="loading" label="Загружаем врачей" />
 
 		<div v-else-if="failed" class="p-5 rounded-4xl bg-card text-15 text-gray">
 			Не удалось загрузить врачей. Попробуйте позже.
