@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
+import UiLoader from '@/components/ui/UiLoader.vue'
 import { getPromos } from '@/api/promos'
 import { fileUrl } from '@/config'
 
@@ -25,9 +26,7 @@ onMounted(async () => {
 	<div class="flex flex-col p-2.5">
 		<UiPageTitle to="/profile">Акции клиники</UiPageTitle>
 
-		<div v-if="loading" class="space-y-2.5 pb-5">
-			<div v-for="i in 2" :key="i" class="h-40 rounded-4xl bg-card animate-pulse" />
-		</div>
+		<UiLoader v-if="loading" label="Загружаем акции" />
 
 		<div v-else-if="failed" class="py-5 px-4 rounded-4xl bg-card text-13 text-gray">
 			Не удалось загрузить акции. Попробуйте позже.
