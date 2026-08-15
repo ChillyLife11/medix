@@ -1,0 +1,104 @@
+@import 'tailwindcss';
+
+@theme {
+	--font-amstelvar: 'Amstelvar';
+	--font-open-sans: 'Open Sans';
+
+	--color-brand: #01b27d;
+	--color-brand-foreground: #ffffff;
+
+	--color-secondary: #E2E2E2;
+	--color-secondary-soft: #F5F6F0;
+	--color-secondary-foreground: #555559;
+
+
+	--color-page: #efefed;
+	--color-loading-page: #e7e7e5;
+	--color-card: #ffffff;
+	--color-card-darker: #f5f5f5;
+
+	--color-gray: #555559;
+
+    --text-15: 15px;
+    --text-13: 13px;
+    
+    --shadow-accent: 0px 4px 4px rgba(0, 0, 0, 0.25), inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+@utility section-title {
+    color: var(--color-brand);
+    font-size: 22px;
+    margin-bottom: 30px;
+}
+
+@font-face {
+    font-family: 'Amstelvar';
+    src: url('./assets/fonts/Amstelvar-Roman.eot');
+    src: url('./assets/fonts/Amstelvar-Roman.eot?#iefix') format('embedded-opentype'),
+        url('./assets/fonts/Amstelvar-Roman.woff2') format('woff2'),
+        url('./assets/fonts/Amstelvar-Roman.woff') format('woff'),
+        url('./assets/fonts/Amstelvar-Roman.ttf') format('truetype'),
+        url('./assets/fonts/Amstelvar-Roman.svg#Amstelvar-Roman') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    src: url('./assets/fonts/OpenSans-Regular.eot');
+    src: url('./assets/fonts/OpenSans-Regular.eot?#iefix') format('embedded-opentype'),
+        url('./assets/fonts/OpenSans-Regular.woff2') format('woff2'),
+        url('./assets/fonts/OpenSans-Regular.woff') format('woff'),
+        url('./assets/fonts/OpenSans-Regular.ttf') format('truetype'),
+        url('./assets/fonts/OpenSans-Regular.svg#OpenSans-Regular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+body {
+	font-family: var(--font-open-sans);
+	background-color: var(--color-page);
+}
+
+/* Анимация переходов между роутами */
+.slide-left-enter-active,
+.slide-left-leave-active,
+.slide-right-enter-active,
+.slide-right-leave-active {
+	transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.slide-left-enter-from {
+	opacity: 0;
+	transform: translateX(24px);
+}
+.slide-left-leave-to {
+	opacity: 0;
+	transform: translateX(-24px);
+}
+
+.slide-right-enter-from {
+	opacity: 0;
+	transform: translateX(-24px);
+}
+.slide-right-leave-to {
+	opacity: 0;
+	transform: translateX(24px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.slide-left-enter-active,
+	.slide-left-leave-active,
+	.slide-right-enter-active,
+	.slide-right-leave-active {
+		transition: opacity 0.15s ease;
+	}
+	.slide-left-enter-from,
+	.slide-left-leave-to,
+	.slide-right-enter-from,
+	.slide-right-leave-to {
+		transform: none;
+	}
+}

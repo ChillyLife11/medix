@@ -1,0 +1,29 @@
+{
+	"name": "medix",
+	"private": true,
+	"version": "0.1.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"format": "prettier --write .",
+		"format:check": "prettier --check ."
+	},
+	"dependencies": {
+		"@internationalized/date": "^3.12.2",
+		"@lucide/vue": "^1.24.0",
+		"axios": "^1.18.1",
+		"embla-carousel-vue": "^8.6.0",
+		"reka-ui": "^2.10.1",
+		"vue": "^3.5.39",
+		"vue-router": "^5.1.0"
+	},
+	"devDependencies": {
+		"@tailwindcss/vite": "^4.3.2",
+		"@vitejs/plugin-vue": "^6.0.7",
+		"prettier": "^3.9.4",
+		"tailwindcss": "^4.3.2",
+		"vite": "^8.1.1"
+	}
+}
