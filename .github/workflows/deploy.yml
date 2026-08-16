@@ -1,0 +1,63 @@
+name: Deploy to GitHub Pages
+
+on:
+    push:
+        branches: [main]
+    # Ручной запуск из вкладки Actions
+    workflow_dispatch:
+
+# Права для публикации на Pages
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+# Параллельные деплои не нужны: катим последний коммит, лишние отменяем.
+concurrency:
+    group: pages
+    cancel-in-progress: true
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        env:
+            # Приложение живёт в подпапке /<repo>/ — с этой базой собираются ссылки
+            # на ассеты и роуты (router читает import.meta.env.BASE_URL).
+            VITE_BASE: /${{ github.event.repository.name }}/
+            # На Pages нет dev-прокси, поэтому бьём в бэкенд напрямую (нужен CORS).
+            VITE_API_HOST: https://dental-web.pro
+            VITE_API_BASE: https://dental-web.pro/api
+            VITE_COMPANY_ID: '1'
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 10
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
+
+            - run: pnpm install --frozen-lockfile
+
+            - run: pnpm build
+
+            # SPA на Pages: прямой заход на /profile отдаёт 404, поэтому кладём
+            # копию index.html как 404.html — она поднимет приложение и роутер.
+            - run: cp dist/index.html dist/404.html
+
+            - uses: actions/upload-pages-artifact@v3
+              with:
+                  path: dist
+
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            - id: deployment
+              uses: actions/deploy-pages@v4

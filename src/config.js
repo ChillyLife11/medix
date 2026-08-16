@@ -1,7 +1,9 @@
 // Единая конфигурация бэкенда.
-// В dev запросы идут через прокси Vite (/api → medix.amgs.online) — база
+// В dev запросы идут через прокси Vite (/api → VITE_API_HOST) — база
 // относительная, так же как в React-оригинале, чтобы обойти CORS.
-export const API_BASE = '/api'
+// На статике (GitHub Pages) прокси нет, поэтому сборка получает абсолютный
+// адрес через VITE_API_BASE — там запросы уже зависят от CORS на бэкенде.
+export const API_BASE = import.meta.env.VITE_API_BASE ?? '/api'
 export const COMPANY_ID = Number(import.meta.env.VITE_COMPANY_ID ?? 1)
 
 // Картинки приходят путями вида /uploads/... — их нужно префиксовать хостом бэка

@@ -11,6 +11,9 @@ export default defineConfig(({ mode }) => {
 	const apiHost = env.VITE_API_HOST ?? 'https://dental-web.pro'
 
 	return {
+		// На GitHub Pages приложение живёт в подпапке (/<repo>/), поэтому база
+		// приходит из VITE_BASE (её задаёт workflow). Локально — корень.
+		base: env.VITE_BASE ?? '/',
 		plugins: [vue(), tailwindcss()],
 		resolve: {
 			alias: {
