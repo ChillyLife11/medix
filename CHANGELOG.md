@@ -5,6 +5,17 @@
 Формат — [Keep a Changelog 1.0.0](https://keepachangelog.com/en/1.0.0/),
 версионирование — [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-08-16
+
+### Added
+
+- Деплой на GitHub Pages: workflow `.github/workflows/deploy.yml` собирает
+  проект на каждый пуш в `main` (и по кнопке в Actions) и публикует `dist`.
+  Для SPA кладётся `404.html` — копия `index.html`, иначе прямой заход на
+  внутренний роут отдавал бы 404.
+- `VITE_BASE` — база сборки (на Pages проект живёт в подпапке `/<repo>/`),
+  `VITE_API_BASE` — абсолютный адрес API для статики, где нет dev-прокси.
+
 ## [0.1.3] - 2026-08-16
 
 ### Added

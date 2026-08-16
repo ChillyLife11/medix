@@ -137,6 +137,18 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 
 Официальные доки: `dev.max.ru/docs/webapps/{introduction,bridge,validation}`.
 
+### Деплой (GitHub Pages)
+`.github/workflows/deploy.yml` на каждый пуш в `main` собирает проект и публикует
+`dist` на Pages (источник в настройках репозитория — **GitHub Actions**).
+Две переменные сборки, обе задаёт workflow:
+- `VITE_BASE=/<repo>/` — на Pages приложение живёт в подпапке, из этой базы Vite
+  строит пути к ассетам, а роутер берёт `import.meta.env.BASE_URL`;
+- `VITE_API_BASE=https://dental-web.pro/api` — на статике dev-прокси нет, поэтому
+  запросы идут на бэкенд напрямую и упираются в его CORS.
+
+Ещё workflow копирует `index.html` в `404.html`: Pages для неизвестного пути
+отдаёт `404.html`, и без этого прямой заход на `/profile` ломался бы.
+
 Роуты сейчас **плоские** (`/booking`, `/branch`, `/service`, `/category`,
 `/doctors`, `/datetime` и т.д.) — в оригинале это был единый экран `create` с
 модалкой и панелями. Мы разбили flow на отдельные экраны — это осознанно, наш UX.
