@@ -1,0 +1,78 @@
+// Текущие записи клиента: загрузка + форматирование под карточки и слайдер.
+// Экземпляр состояния — на каждый экран свой: записи меняются, кешировать их
+// на сессию нельзя (в отличие от справочников в @/lib/cache).
+
+import { ref } from 'vue'
+import { getAppointments, isCurrent } from '@/api/appointments'
+import { storage } from '@/lib/storage'
+
+// Услуг в записи может быть несколько — показываем через запятую.
+export function serviceTitle(appointment) {
+	return (appointment.services ?? []).map((service) => service.title).join(', ') || 'Приём'
+}
+
+// Врач приходит вложенным объектом; если его в ответе нет — вернём пустую строку,
+// вызывающий код такую строку прячет.
+export function doctorName(appointment) {
+	const master = appointment.master ?? appointment.user ?? appointment.coworker
+	if (!master) return ''
+	const name = [master.last_name, master.first_name, master.middle_name].filter(Boolean).join(' ')
+	return name || master.username || ''
+}
+
+function toDate(appointment) {
+	if (!appointment.date) return null
+	const [year, month, day] = appointment.date.split('-').map(Number)
+	return new Date(year, month - 1, day)
+}
+
+// "31.08.2026 / 12:00" — компактный вид для карточки списка.
+export function dateLabel(appointment) {
+	const [year, month, day] = (appointment.date ?? '').split('-')
+	const date = day ? `${day}.${month}.${year}` : ''
+	return [date, appointment.start].filter(Boolean).join(' / ')
+}
+
+const longDateFormatter = new Intl.DateTimeFormat('ru', {
+	weekday: 'short',
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+})
+
+// "чт, 31 августа 2026 г." — развёрнутый вид для слайдера.
+export function longDateLabel(appointment) {
+	const date = toDate(appointment)
+	return date ? longDateFormatter.format(date) : ''
+}
+
+// "12:00 - 12:30"; если конца нет, показываем только начало.
+export function timeRange(appointment) {
+	return [appointment.start, appointment.end].filter(Boolean).join(' - ')
+}
+
+export function useAppointments() {
+	const appointments = ref([])
+	const loading = ref(true)
+	const failed = ref(false)
+
+	async function load() {
+		const clientId = Number(storage.userId)
+		if (!clientId) {
+			loading.value = false
+			return
+		}
+		loading.value = true
+		failed.value = false
+		try {
+			appointments.value = (await getAppointments(clientId)).filter((a) => isCurrent(a))
+		} catch (e) {
+			console.warn('[appointments] index failed', e)
+			failed.value = true
+		} finally {
+			loading.value = false
+		}
+	}
+
+	return { appointments, loading, failed, load }
+}

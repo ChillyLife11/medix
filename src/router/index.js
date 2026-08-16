@@ -22,11 +22,6 @@ const routes = [
 		component: () => import('@/views/ViewSale.vue'),
 	},
 	{
-		path: '/history',
-		name: 'history',
-		component: () => import('@/views/ViewHistory.vue'),
-	},
-	{
 		path: '/active',
 		name: 'active',
 		component: () => import('@/views/ViewActive.vue'),
