@@ -1,6 +1,7 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
-import { getLocalTimeZone, today } from '@internationalized/date'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
 import {
 	CalendarRoot,
 	CalendarHeader,
@@ -19,36 +20,90 @@ import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
 import { getSchedule, scheduleTimes } from '@/api/coworkers'
+import { createAppointment } from '@/api/appointments'
+import { apiErrorMessage } from '@/api/http'
 import { useBooking } from '@/composables/useBooking'
 
-const { branchId, masterId, date, time } = useBooking()
+const router = useRouter()
+const { branchId, masterId, date, time, reset, appointmentPayload, isComplete } = useBooking()
 
 // Записаться можно только начиная с сегодняшнего дня.
 const minDate = today(getLocalTimeZone())
-const selectedDate = ref(minDate)
+// При возврате на экран показываем ранее выбранный день, а не сегодняшний.
+// Сами слоты не кешируем — их могли занять, пока пользователь ходил по шагам.
+const savedDate = date.value ? parseDate(date.value) : null
+const selectedDate = ref(savedDate && savedDate.compare(minDate) >= 0 ? savedDate : minDate)
 
 const monthFormatter = new Intl.DateTimeFormat('ru', { month: 'long' })
 const monthLabel = (dateValue) =>
 	monthFormatter.format(new Date(dateValue.year, dateValue.month - 1, 1))
 
-// Слоты приходят с бэка на конкретную дату — периоды просто делят их пополам.
+// Периоды делят часовую сетку пополам — утро и вторая половина дня.
 const periods = [
 	{ label: '9:00 - 13:00', from: 0, to: 13 },
 	{ label: '13:00 - 18:00', from: 13, to: 24 },
 ]
 const selectedPeriod = ref(periods[0].label)
 
-const times = ref([])
+const hours = ref([])
 const loading = ref(false)
 const failed = ref(false)
 const selectedTime = ref(null)
 
 const hourOf = (t) => Number(t.split(':')[0])
+const minuteOf = (t) => Number(t.split(':')[1])
+
+// Плашки времени статичные, с шагом в час: 11:00, 12:00, 13:00 и так далее.
+// Из расписания берём только границы рабочего дня — первый и последний слот;
+// какие интервалы внутри реально свободны, проверяет бэкенд при создании записи.
+// Неполный час на краях отбрасываем: 09:30 → начинаем с 10:00, 17:30 → до 17:00.
+function hourlyGrid(slots) {
+	if (!slots.length) return []
+	const first = slots[0]
+	const last = slots[slots.length - 1]
+	const from = minuteOf(first) > 0 ? hourOf(first) + 1 : hourOf(first)
+	const grid = []
+	for (let hour = from; hour <= hourOf(last); hour++) {
+		grid.push(`${String(hour).padStart(2, '0')}:00`)
+	}
+	return grid
+}
 
 const visibleTimes = computed(() => {
 	const period = periods.find((p) => p.label === selectedPeriod.value)
-	return times.value.filter((t) => hourOf(t) >= period.from && hourOf(t) < period.to)
+	return hours.value.filter((t) => hourOf(t) >= period.from && hourOf(t) < period.to)
 })
+
+// Записаться можно не раньше чем через час: прошедшее время и ближайший час
+// показываем, но выбрать их нельзя (кнопки disabled).
+const LEAD_MS = 60 * 60 * 1000
+
+// «Сейчас» подтягиваем раз в минуту — экран может быть открыт долго, и граница
+// доступного времени должна ехать вместе с часами.
+const now = ref(new Date())
+let nowTimer = null
+onMounted(() => {
+	nowTimer = setInterval(() => (now.value = new Date()), 60_000)
+})
+onUnmounted(() => clearInterval(nowTimer))
+
+// Слот ("HH:mm" на выбранную дату) как Date — чтобы сравнить с «сейчас».
+function slotAt(dateValue, slot) {
+	return new Date(
+		dateValue.year,
+		dateValue.month - 1,
+		dateValue.day,
+		hourOf(slot),
+		minuteOf(slot),
+	)
+}
+
+function isTooSoon(slot) {
+	return slotAt(selectedDate.value, slot) - now.value < LEAD_MS
+}
+
+// Слоты, которые реально можно выбрать — из них берём автовыбор.
+const availableTimes = computed(() => visibleTimes.value.filter((t) => !isTooSoon(t)))
 
 async function loadTimes(dateValue) {
 	const isoDate = dateValue.toString() // YYYY-MM-DD
@@ -61,26 +116,60 @@ async function loadTimes(dateValue) {
 			branchId: branchId.value,
 			date: isoDate,
 		})
-		times.value = scheduleTimes(schedule, isoDate)
+		hours.value = hourlyGrid(scheduleTimes(schedule, isoDate))
+		showPeriodWithFreeSlot()
 	} catch (e) {
 		console.warn('[datetime] get-schedule failed', e)
 		failed.value = true
-		times.value = []
+		hours.value = []
 	} finally {
 		loading.value = false
 	}
 }
 
+// Если в первой половине дня выбирать уже нечего (всё прошло), сразу открываем
+// период, где есть свободный слот — иначе пользователь упирается в пустую сетку.
+function showPeriodWithFreeSlot() {
+	const inPeriod = (period) =>
+		hours.value.some((t) => hourOf(t) >= period.from && hourOf(t) < period.to && !isTooSoon(t))
+	if (inPeriod(periods.find((p) => p.label === selectedPeriod.value))) return
+	selectedPeriod.value = (periods.find(inPeriod) ?? periods[0]).label
+}
+
 watch(selectedDate, loadTimes, { immediate: true })
 
 // Первый доступный слот в периоде — чтобы кнопка не была вечно заблокирована.
-watch(visibleTimes, (list) => {
+watch(availableTimes, (list) => {
 	if (!list.includes(selectedTime.value)) selectedTime.value = list[0] ?? null
 })
 
-function submit() {
+const saving = ref(false)
+const saveError = ref('')
+
+// Финал флоу: фиксируем выбор и создаём запись. При успехе состояние сбрасываем,
+// чтобы следующая запись начиналась с чистого листа.
+async function submit() {
 	date.value = selectedDate.value.toString()
 	time.value = selectedTime.value
+
+	if (!isComplete()) {
+		saveError.value = 'Не хватает данных для записи — пройдите шаги заново.'
+		return
+	}
+
+	saving.value = true
+	saveError.value = ''
+	try {
+		await createAppointment(appointmentPayload())
+		reset()
+		// На главный экран — в слайдере актуальных записей появится новая.
+		router.push('/profile')
+	} catch (e) {
+		console.warn('[datetime] appointment/create failed', e)
+		saveError.value = apiErrorMessage(e, 'Не удалось создать запись. Попробуйте позже.')
+	} finally {
+		saving.value = false
+	}
 }
 </script>
 
@@ -191,12 +280,13 @@ function submit() {
 						v-for="slot in visibleTimes"
 						:key="slot"
 						type="button"
+						:disabled="isTooSoon(slot)"
 						:class="
 							selectedTime === slot
 								? 'bg-brand text-white'
 								: 'border border-brand text-brand'
 						"
-						class="flex items-center justify-center min-h-9 py-1 px-2 rounded-full text-13 duration-75 active:scale-[.98]"
+						class="flex items-center justify-center min-h-9 py-1 px-2 rounded-full text-13 duration-75 active:scale-[.98] disabled:opacity-40 disabled:pointer-events-none"
 						@click="selectedTime = slot"
 					>
 						{{ slot }}
@@ -205,13 +295,13 @@ function submit() {
 			</div>
 		</div>
 
-		<UiBtn
-			:disabled="!selectedTime"
-			class="sticky bottom-2.5 left-0 mt-auto"
-			fluid
-			@click="submit"
-		>
-			Записаться
-		</UiBtn>
+		<div class="sticky bottom-2.5 left-0 mt-auto space-y-2.5">
+			<div v-if="saveError" class="p-4 rounded-4xl bg-card text-13 text-center text-gray">
+				{{ saveError }}
+			</div>
+			<UiBtn :disabled="!selectedTime || saving" fluid @click="submit">
+				{{ saving ? 'Записываем…' : 'Записаться' }}
+			</UiBtn>
+		</div>
 	</div>
 </template>

@@ -14,3 +14,17 @@ api.interceptors.request.use((config) => {
 	if (token) config.headers.Authorization = `Bearer ${token}`
 	return config
 })
+
+// Текст ошибки для пользователя. Бэк отвечает по-разному: Yii-формат
+// { name, message, status }, список валидации [{ field, message }] или
+// { поле: ["текст"] } — берём первое человекочитаемое сообщение.
+export function apiErrorMessage(error, fallback = 'Что-то пошло не так. Попробуйте позже.') {
+	const data = error?.response?.data
+	if (!data) return fallback
+	if (Array.isArray(data)) return data[0]?.message || fallback
+	if (typeof data.message === 'string' && data.message) return data.message
+	const first = Object.values(data)
+		.flat()
+		.find((value) => typeof value === 'string' && value)
+	return first || fallback
+}
