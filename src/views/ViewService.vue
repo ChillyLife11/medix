@@ -5,16 +5,11 @@ import { RadioGroupRoot, RadioGroupItem } from 'reka-ui'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
-import { getCoworkers } from '@/api/coworkers'
+import { getCoworkers, loadedCoworkers } from '@/api/coworkers'
 import { useBooking } from '@/composables/useBooking'
 
 const router = useRouter()
 const { serviceId } = useBooking()
-
-const services = ref([])
-const loading = ref(true)
-const failed = ref(false)
-const selected = ref(serviceId.value)
 
 // Услуги приходят вместе с врачами — собираем уникальный список по всем
 // специалистам, чтобы показывать только то, на что реально можно записаться.
@@ -28,7 +23,15 @@ function collectServices(coworkers) {
 	return [...map.values()]
 }
 
+// При возврате назад врачи уже в кеше — берём их сразу, без запроса и лоадера.
+const cached = loadedCoworkers()
+const services = ref(cached ? collectServices(cached) : [])
+const loading = ref(!cached)
+const failed = ref(false)
+const selected = ref(serviceId.value ?? services.value[0]?.id ?? null)
+
 onMounted(async () => {
+	if (!loading.value) return
 	try {
 		services.value = collectServices(await getCoworkers())
 		selected.value ??= services.value[0]?.id ?? null

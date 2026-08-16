@@ -1,25 +1,30 @@
 import { api } from '@/api/http'
 import { COMPANY_ID } from '@/config'
+import { cachedRequest, cachedResult, dropCache } from '@/lib/cache'
 
 // Сотрудники (врачи) клиники. Требует авторизации (Bearer).
 // Элемент: { id, username, email, status, company_id, client_id, created_at,
 // updated_at, last_login_at, services: [{ id, title, price, category_id, ... }] }
 // — список услуг специалиста приходит вместе с его данными.
-// Список нужен подряд на двух экранах (услуги и врачи), поэтому запрос
-// выполняется один раз за сессию. force — перезапросить принудительно.
-let coworkersRequest = null
+// Список нужен подряд на двух экранах (услуги и врачи) и при возврате назад,
+// поэтому запрос выполняется один раз за сессию (см. lib/cache).
+const COWORKERS = 'coworker/index'
 
-export function getCoworkers({ force = false } = {}) {
-	if (!coworkersRequest || force) {
-		coworkersRequest = api
+export function getCoworkers() {
+	return cachedRequest(COWORKERS, () =>
+		api
 			.get('/coworker/index', { params: { 'filter[company_id]': COMPANY_ID, sort: '-id' } })
-			.then((r) => r.data ?? [])
-			.catch((e) => {
-				coworkersRequest = null
-				throw e
-			})
-	}
-	return coworkersRequest
+			.then((r) => r.data ?? []),
+	)
+}
+
+// Уже загруженные врачи (или undefined) — синхронно, для возврата на экран.
+export function loadedCoworkers() {
+	return cachedResult(COWORKERS)
+}
+
+export function dropCoworkersCache() {
+	dropCache(COWORKERS)
 }
 
 export function getCoworker(id) {

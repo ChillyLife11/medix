@@ -5,21 +5,23 @@ import { RadioGroupRoot, RadioGroupItem } from 'reka-ui'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
-import { getBranches } from '@/api/branches'
+import { getBranches, loadedBranches } from '@/api/branches'
 import { useBooking } from '@/composables/useBooking'
 
 const router = useRouter()
 const { branchId } = useBooking()
 
-const branches = ref([])
-const loading = ref(true)
+// При возврате назад филиалы уже в кеше — берём их сразу, без запроса и лоадера.
+const branches = ref(loadedBranches() ?? [])
+const loading = ref(!branches.value.length)
 const failed = ref(false)
-const selected = ref(null)
+const selected = ref(branchId.value ?? branches.value[0]?.id ?? null)
 
 onMounted(async () => {
+	if (!loading.value) return
 	try {
 		branches.value = await getBranches()
-		selected.value = branches.value[0]?.id ?? null
+		selected.value ??= branches.value[0]?.id ?? null
 	} catch (e) {
 		console.warn('[branch] index failed', e)
 		failed.value = true

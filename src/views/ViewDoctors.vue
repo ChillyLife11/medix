@@ -5,14 +5,13 @@ import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
 import DoctorCard from '@/components/doctor/DoctorCard.vue'
-import { getCoworkers } from '@/api/coworkers'
+import { getCoworkers, loadedCoworkers } from '@/api/coworkers'
 import { useBooking } from '@/composables/useBooking'
 
 const router = useRouter()
 const { serviceId, masterId } = useBooking()
 
 const doctors = ref([])
-const loading = ref(true)
 const failed = ref(false)
 const selected = ref(null)
 
@@ -26,10 +25,23 @@ const positionOf = (c) => c.position || 'Терапевт'
 const providesService = (coworker) =>
 	!serviceId.value || (coworker.services ?? []).some((s) => s.id === serviceId.value)
 
+// Ранее выбранного врача возвращаем, только если он есть в текущем списке:
+// после смены услуги он мог из него выпасть.
+function fill(coworkers) {
+	doctors.value = coworkers.filter(providesService)
+	const keepSelected = doctors.value.some((d) => d.id === masterId.value)
+	selected.value = keepSelected ? masterId.value : (doctors.value[0]?.id ?? null)
+}
+
+// При возврате назад врачи уже в кеше — берём их сразу, без запроса и лоадера.
+const cached = loadedCoworkers()
+if (cached) fill(cached)
+const loading = ref(!cached)
+
 onMounted(async () => {
+	if (!loading.value) return
 	try {
-		doctors.value = (await getCoworkers()).filter(providesService)
-		selected.value = masterId.value ?? doctors.value[0]?.id ?? null
+		fill(await getCoworkers())
 	} catch (e) {
 		console.warn('[doctors] coworker/index failed', e)
 		failed.value = true
