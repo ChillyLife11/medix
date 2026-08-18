@@ -1,10 +1,14 @@
-// Текущие записи клиента: загрузка + форматирование под карточки и слайдер.
+// Записи клиента: загрузка + форматирование под карточки и слайдер.
 // Экземпляр состояния — на каждый экран свой: записи меняются, кешировать их
 // на сессию нельзя (в отличие от справочников в @/lib/cache).
 
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { getAppointments, isCurrent } from '@/api/appointments'
 import { storage } from '@/lib/storage'
+
+// Экранам нужен и признак отмены — отдаём его отсюда же, чтобы вьюхи
+// импортировали всё из одного места.
+export { isCanceled } from '@/api/appointments'
 
 // Услуг в записи может быть несколько — показываем через запятую.
 export function serviceTitle(appointment) {
@@ -40,10 +44,17 @@ const longDateFormatter = new Intl.DateTimeFormat('ru', {
 	year: 'numeric',
 })
 
-// "чт, 31 августа 2026 г." — развёрнутый вид для слайдера.
+// "Чт, 31 августа 2026" — развёрнутый вид для слайдера. Собираем из частей сами:
+// Intl в русской локали пишет день недели строчной и добавляет « г.» после года,
+// а плашке нужна одна строка и заглавная буква.
 export function longDateLabel(appointment) {
 	const date = toDate(appointment)
-	return date ? longDateFormatter.format(date) : ''
+	if (!date) return ''
+	const parts = Object.fromEntries(
+		longDateFormatter.formatToParts(date).map((part) => [part.type, part.value]),
+	)
+	const weekday = parts.weekday.charAt(0).toUpperCase() + parts.weekday.slice(1)
+	return `${weekday}, ${parts.day} ${parts.month} ${parts.year}`
 }
 
 // "12:00 - 12:30"; если конца нет, показываем только начало.
@@ -52,9 +63,13 @@ export function timeRange(appointment) {
 }
 
 export function useAppointments() {
+	// appointments — всё, что отдал сервер: и прошедшие, и отменённые (история).
+	// current — только актуальные: слайдер на главной показывает лишь их.
 	const appointments = ref([])
 	const loading = ref(true)
 	const failed = ref(false)
+
+	const current = computed(() => appointments.value.filter((a) => isCurrent(a)))
 
 	async function load() {
 		const clientId = Number(storage.userId)
@@ -65,7 +80,7 @@ export function useAppointments() {
 		loading.value = true
 		failed.value = false
 		try {
-			appointments.value = (await getAppointments(clientId)).filter((a) => isCurrent(a))
+			appointments.value = await getAppointments(clientId)
 		} catch (e) {
 			console.warn('[appointments] index failed', e)
 			failed.value = true
@@ -74,5 +89,5 @@ export function useAppointments() {
 		}
 	}
 
-	return { appointments, loading, failed, load }
+	return { appointments, current, loading, failed, load }
 }

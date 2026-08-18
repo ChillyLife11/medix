@@ -85,7 +85,10 @@ let nowTimer = null
 onMounted(() => {
 	nowTimer = setInterval(() => (now.value = new Date()), 60_000)
 })
-onUnmounted(() => clearInterval(nowTimer))
+onUnmounted(() => {
+	clearInterval(nowTimer)
+	clearInterval(successTimer)
+})
 
 // Слот ("HH:mm" на выбранную дату) как Date — чтобы сравнить с «сейчас».
 function slotAt(dateValue, slot) {
@@ -146,6 +149,27 @@ watch(availableTimes, (list) => {
 const saving = ref(false)
 const saveError = ref('')
 
+// Успех подтверждаем окном: показываем его с обратным отсчётом и уводим на
+// главную только по нулю. Мгновенный переход не читался — человек не понимал,
+// оформилась запись или нет.
+const SUCCESS_SECONDS = 5
+const success = ref(false)
+const countdown = ref(SUCCESS_SECONDS)
+let successTimer = null
+
+function showSuccess() {
+	success.value = true
+	countdown.value = SUCCESS_SECONDS
+	successTimer = setInterval(() => {
+		countdown.value -= 1
+		if (countdown.value > 0) return
+		clearInterval(successTimer)
+		successTimer = null
+		// В слайдере актуальных записей на главной появится новая.
+		router.push('/profile')
+	}, 1000)
+}
+
 // Финал флоу: фиксируем выбор и создаём запись. При успехе состояние сбрасываем,
 // чтобы следующая запись начиналась с чистого листа.
 async function submit() {
@@ -162,8 +186,7 @@ async function submit() {
 	try {
 		await createAppointment(appointmentPayload())
 		reset()
-		// На главный экран — в слайдере актуальных записей появится новая.
-		router.push('/profile')
+		showSuccess()
 	} catch (e) {
 		console.warn('[datetime] appointment/create failed', e)
 		saveError.value = apiErrorMessage(e, 'Не удалось создать запись. Попробуйте позже.')
@@ -302,6 +325,24 @@ async function submit() {
 			<UiBtn :disabled="!selectedTime || saving" fluid @click="submit">
 				{{ saving ? 'Записываем…' : 'Записаться' }}
 			</UiBtn>
+		</div>
+
+		<div
+			v-if="success"
+			class="fixed inset-0 z-50 flex items-center justify-center p-5 bg-page/70 backdrop-blur-xs"
+		>
+			<div
+				role="status"
+				aria-live="polite"
+				class="w-full max-w-85 py-8 px-6 rounded-4xl text-center bg-brand/15 shadow-accent"
+			>
+				<div class="text-xl text-gray">Ваша запись успешно оформлена!</div>
+				<div
+					class="mt-6 mx-auto flex items-center justify-center w-14 h-14 rounded-full border border-brand text-xl text-brand tabular-nums"
+				>
+					{{ countdown }}
+				</div>
+			</div>
 		</div>
 	</div>
 </template>

@@ -3,10 +3,17 @@ import { onMounted } from 'vue'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
 import HistoryCard from '@/components/history/HistoryCard.vue'
-import { useAppointments, serviceTitle, doctorName, dateLabel } from '@/composables/useAppointments'
-import { House, Plus, GalleryHorizontalEnd } from '@lucide/vue'
+import UiTabbar from '@/components/ui/UiTabbar.vue'
+import {
+	useAppointments,
+	serviceTitle,
+	doctorName,
+	dateLabel,
+	isCanceled,
+} from '@/composables/useAppointments'
 
-// Текущие записи клиента — все сразу, отдельного экрана со списком нет.
+// История записей: весь список с сервера — актуальные, прошедшие и отменённые.
+// Актуальные дублируются слайдером на главной, отменённые видно только здесь.
 const { appointments, loading, failed, load } = useAppointments()
 
 onMounted(load)
@@ -31,7 +38,7 @@ onMounted(load)
 		</div>
 
 		<div class="px-2.5">
-			<h1 class="section-title mb-4">Мои записи</h1>
+			<h1 class="section-title mb-4">История записей</h1>
 
 			<UiLoader v-if="loading" label="Загружаем записи" />
 
@@ -40,7 +47,7 @@ onMounted(load)
 			</div>
 
 			<div v-else-if="!appointments.length" class="p-5 rounded-4xl bg-card text-15 text-gray">
-				Активных записей нет — выберите услугу и запишитесь на приём.
+				Записей пока нет — выберите услугу и запишитесь на приём.
 			</div>
 
 			<div v-else class="space-y-2.5">
@@ -50,6 +57,7 @@ onMounted(load)
 					:service="serviceTitle(appointment)"
 					:doctor="doctorName(appointment)"
 					:date="dateLabel(appointment)"
+					:canceled="isCanceled(appointment)"
 				/>
 			</div>
 		</div>
@@ -69,16 +77,6 @@ onMounted(load)
 			</div>
 		</div>
 
-		<div class="mt-auto mb-2.5 px-2.5">
-			<div class="flex items-center justify-between p-4 rounded-full shadow-accent bg-card">
-				<UiBtn to="/profile" color="secondary" soft icon>
-					<House stroke-width="1.1" size="26" />
-				</UiBtn>
-				<UiBtn to="/branch" icon><Plus size="32" /></UiBtn>
-				<UiBtn color="secondary" soft icon>
-					<GalleryHorizontalEnd stroke-width="1.1" size="26" />
-				</UiBtn>
-			</div>
-		</div>
+		<UiTabbar />
 	</div>
 </template>
