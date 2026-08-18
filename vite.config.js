@@ -17,6 +17,23 @@ export default defineConfig(({ mode }) => {
 				'@': fileURLToPath(new URL('./src', import.meta.url)),
 			},
 		},
+		base: 'max/app-1/', // 👈 Базовый путь для сборки
+		build: {
+			outDir: 'dist/max/app-1', // 👈 Папка для сборки в Yii2
+			assetsDir: 'assets',
+			manifest: true, // 👈 Включаем манифест
+			rollupOptions: {
+				input: {
+					main: fileURLToPath(new URL('./src/main.js', import.meta.url)),
+				},
+				output: {
+					entryFileNames: 'assets/[name].[hash].js',
+					chunkFileNames: 'assets/[name].[hash].js',
+					assetFileNames: 'assets/[name].[hash].[ext]',
+				},
+			},
+			emptyOutDir: true,
+		},
 		server: {
 			// доступ по сети (для телефона в той же сети) и через туннель (cloudflared/ngrok),
 			// чтобы открывать мини-апп в реальном клиенте MAX

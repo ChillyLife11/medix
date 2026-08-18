@@ -42,6 +42,6 @@ export function useMessenger() {
 		// Нативный запрос телефона. Вне MAX (DEV в браузере) — тестовый номер,
 		// чтобы отлаживать регистрацию.
 		requestPhone: () =>
-			webApp?.requestContact?.() ?? (import.meta.env.DEV ? '71111111113' : null),
+			webApp?.requestContact?.() ?? (import.meta.env.DEV ? '71111111114' : null),
 	}
 }

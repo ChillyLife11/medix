@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+const baseUrl = import.meta.env.VITE_BASE_URL || '/max/123111'
+
+
 const routes = [
 	{
 		path: '/',
@@ -59,7 +62,7 @@ const routes = [
 ]
 
 const router = createRouter({
-	history: createWebHistory(import.meta.env.BASE_URL),
+	history: createWebHistory(baseUrl),
 	routes,
 })
 

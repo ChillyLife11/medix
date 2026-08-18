@@ -12,7 +12,7 @@ onMounted(async () => {
 	// нет клиента (или запрос упал) → согласия и регистрация.
 	let user = null
 	try {
-		user = await getUserByPhone('71111111113')
+		user = await getUserByPhone('71111111114')
 	} catch (e) {
 		console.warn('[home] by-phone failed', e)
 	}
