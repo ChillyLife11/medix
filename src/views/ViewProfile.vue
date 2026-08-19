@@ -66,7 +66,7 @@ onMounted(async () => {
 			</div>
 
 			<div v-else-if="!current.length" class="text-13 text-center text-gray opacity-70">
-				Активных записей нет — выберите услугу и запишитесь на приём.
+				Активных записей нет - выберите услугу <br>и запишитесь на приём.
 			</div>
 
 			<div v-show="hasAppointments" class="flex items-center gap-1 w-full">
