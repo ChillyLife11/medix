@@ -85,10 +85,7 @@ let nowTimer = null
 onMounted(() => {
 	nowTimer = setInterval(() => (now.value = new Date()), 60_000)
 })
-onUnmounted(() => {
-	clearInterval(nowTimer)
-	clearInterval(successTimer)
-})
+onUnmounted(() => clearInterval(nowTimer))
 
 // Слот ("HH:mm" на выбранную дату) как Date — чтобы сравнить с «сейчас».
 function slotAt(dateValue, slot) {
@@ -149,26 +146,9 @@ watch(availableTimes, (list) => {
 const saving = ref(false)
 const saveError = ref('')
 
-// Успех подтверждаем окном: показываем его с обратным отсчётом и уводим на
-// главную только по нулю. Мгновенный переход не читался — человек не понимал,
-// оформилась запись или нет.
-const SUCCESS_SECONDS = 5
+// Успех подтверждаем плашкой поверх экрана: мгновенный переход не читался —
+// человек не понимал, оформилась запись или нет. Уходим на главную по кнопке.
 const success = ref(false)
-const countdown = ref(SUCCESS_SECONDS)
-let successTimer = null
-
-function showSuccess() {
-	success.value = true
-	countdown.value = SUCCESS_SECONDS
-	successTimer = setInterval(() => {
-		countdown.value -= 1
-		if (countdown.value > 0) return
-		clearInterval(successTimer)
-		successTimer = null
-		// В слайдере актуальных записей на главной появится новая.
-		router.push('/profile')
-	}, 1000)
-}
 
 // Финал флоу: фиксируем выбор и создаём запись. При успехе состояние сбрасываем,
 // чтобы следующая запись начиналась с чистого листа.
@@ -186,7 +166,7 @@ async function submit() {
 	try {
 		await createAppointment(appointmentPayload())
 		reset()
-		showSuccess()
+		success.value = true
 	} catch (e) {
 		console.warn('[datetime] appointment/create failed', e)
 		saveError.value = apiErrorMessage(e, 'Не удалось создать запись. Попробуйте позже.')
@@ -327,21 +307,14 @@ async function submit() {
 			</UiBtn>
 		</div>
 
-		<div
-			v-if="success"
-			class="fixed inset-0 z-50 flex items-center justify-center p-5 bg-page/70 backdrop-blur-xs"
-		>
+		<div v-if="success" class="fixed inset-0 z-50 flex items-center justify-center p-5">
 			<div
 				role="status"
 				aria-live="polite"
-				class="w-full max-w-85 py-8 px-6 rounded-4xl text-center bg-brand/15 shadow-accent"
+				class="w-full max-w-85 py-10 px-6 rounded-4xl text-center bg-card-darker shadow-accent"
 			>
-				<div class="text-xl text-gray">Ваша запись успешно оформлена!</div>
-				<div
-					class="mt-6 mx-auto flex items-center justify-center w-14 h-14 rounded-full border border-brand text-xl text-brand tabular-nums"
-				>
-					{{ countdown }}
-				</div>
+				<div class="text-lg text-gray">Ваша запись успешно оформлена!</div>
+				<UiBtn class="mt-6" to="/profile">Перейти в профиль</UiBtn>
 			</div>
 		</div>
 	</div>
