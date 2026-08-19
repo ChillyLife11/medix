@@ -11,6 +11,9 @@ import { useBooking } from '@/composables/useBooking'
 const router = useRouter()
 const { serviceId, masterId } = useBooking()
 
+// Заглушка, пока бэкенд не отдаёт фото врача (public/images).
+const defaultPhoto = `${import.meta.env.BASE_URL}images/doctor-img.png`
+
 const doctors = ref([])
 const failed = ref(false)
 const selected = ref(null)
@@ -77,7 +80,7 @@ function submit() {
 				:surname="surnameOf(doctor)"
 				:name="nameOf(doctor)"
 				:specialty="positionOf(doctor)"
-				:photo="doctor.avatar || '/doctor-img.png'"
+				:photo="doctor.avatar || defaultPhoto"
 				:selected="selected === doctor.id"
 				@click="selected = doctor.id"
 			/>

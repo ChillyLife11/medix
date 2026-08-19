@@ -17,6 +17,8 @@ import { NotebookPen, CalendarDays, Clock, User, ChevronLeft, ChevronRight } fro
 // Актуальные записи в слайдере: по одной на слайд, листаются стрелками.
 // Берём current, а не весь список: прошедшие и отменённые живут в истории (/active).
 const { current, loading, failed, load } = useAppointments()
+// Картинки лежат в public/images — путь строим от базы сборки.
+const base = import.meta.env.BASE_URL
 
 const [emblaRef, emblaApi] = emblaCarouselVue({ loop: false, align: 'center' })
 
@@ -52,7 +54,7 @@ onMounted(async () => {
 			<div class="relative w-23.25 rounded-full">
 				<span class="block w-full pt-[100%]" />
 				<img
-					src="/doctor-img.png"
+					:src="`${base}images/doctor-img.png`"
 					alt="Пациент"
 					class="absolute inset-0 w-full h-full rounded-full object-cover object-center"
 				/>
@@ -66,7 +68,7 @@ onMounted(async () => {
 			</div>
 
 			<div v-else-if="!current.length" class="text-13 text-center text-gray opacity-70">
-				Активных записей нет - выберите услугу <br>и запишитесь на приём.
+				Активных записей нет - выберите услугу <br />и запишитесь на приём.
 			</div>
 
 			<div v-show="hasAppointments" class="flex items-center gap-1 w-full">

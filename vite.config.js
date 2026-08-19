@@ -15,6 +15,21 @@ export default defineConfig(({ mode }) => {
 		// приходит из VITE_BASE (её задаёт workflow). Локально — корень.
 		base: env.VITE_BASE ?? '/',
 		plugins: [vue(), tailwindcss()],
+		build: {
+			rollupOptions: {
+				output: {
+					// Картинки складываем в dist/images, остальное (шрифты, css)
+					// остаётся в dist/assets. svg не берём — у нас это
+					// шрифтовые файлы Amstelvar/OpenSans.
+					assetFileNames: (asset) => {
+						const name = asset.names?.[0] ?? asset.name ?? ''
+						return /\.(png|jpe?g|webp|gif|avif)$/i.test(name)
+							? 'images/[name]-[hash][extname]'
+							: 'assets/[name]-[hash][extname]'
+					},
+				},
+			},
+		},
 		resolve: {
 			alias: {
 				'@': fileURLToPath(new URL('./src', import.meta.url)),

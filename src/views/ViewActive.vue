@@ -15,6 +15,8 @@ import {
 // История записей: весь список с сервера — актуальные, прошедшие и отменённые.
 // Актуальные дублируются слайдером на главной, отменённые видно только здесь.
 const { appointments, loading, failed, load } = useAppointments()
+// Картинки лежат в public/images — путь строим от базы сборки.
+const base = import.meta.env.BASE_URL
 
 onMounted(load)
 </script>
@@ -25,7 +27,7 @@ onMounted(load)
 			<div class="relative w-12.25 rounded-full">
 				<span class="block w-full pt-[100%]" />
 				<img
-					src="/doctor-img.png"
+					:src="`${base}images/doctor-img.png`"
 					alt="Пациент"
 					class="absolute inset-0 w-full h-full rounded-full object-cover object-center"
 				/>
