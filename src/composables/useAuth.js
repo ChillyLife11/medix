@@ -2,7 +2,7 @@
 // Само состояние сессии — в @/session.
 
 import { ref } from 'vue'
-import { getUserByPhone } from '@/api/users'
+import { getUserByPhone, registerUser } from '@/api/users'
 import { TEST_PHONE } from '@/config'
 import { clearSession, phone, setSession, token } from '@/session'
 
@@ -16,11 +16,12 @@ export function useAuth() {
 		return (await signIn(phone.value ?? TEST_PHONE)) ? 'authed' : 'need-register'
 	}
 
-	// Вход по телефону. Возвращает true, если клиент с таким номером найден.
+	// Вход по телефону: ищем клиента, а если такого номера нет — регистрируем.
+	// В обоих случаях в ответе приходит access_token.
 	async function signIn(newPhone = TEST_PHONE, consents = null) {
 		if (!newPhone) return false
 		try {
-			const account = await getUserByPhone(newPhone)
+			const account = (await getUserByPhone(newPhone)) ?? (await registerUser(newPhone))
 			if (!account?.access_token) return false
 			setSession(account, newPhone)
 			client.value = account
