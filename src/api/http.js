@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { API_BASE } from '@/config'
-import { storage } from '@/lib/storage'
+import { clearSession, token } from '@/session'
+import router from '@/router'
 
 // Общий axios-инстанс. База — /api (в dev проксируется на бэкенд, обход CORS).
 export const api = axios.create({
@@ -10,10 +11,22 @@ export const api = axios.create({
 // В каждый запрос добавляем Authorization: Bearer <access_token>.
 // Токен приходит в ответе на авторизацию/регистрацию и лежит в localStorage.
 api.interceptors.request.use((config) => {
-	const token = storage.token
-	if (token) config.headers.Authorization = `Bearer ${token}`
+	if (token.value) config.headers.Authorization = `Bearer ${token.value}`
 	return config
 })
+
+// Протухший или отсутствующий токен: чистим сессию и возвращаем на вход,
+// иначе экраны молча упираются в 401 при каждом запросе.
+api.interceptors.response.use(
+	(response) => response,
+	(error) => {
+		if (error?.response?.status === 401 && token.value) {
+			clearSession()
+			router.replace('/agree')
+		}
+		return Promise.reject(error)
+	},
+)
 
 // Текст ошибки для пользователя. Бэк отвечает по-разному: Yii-формат
 // { name, message, status }, список валидации [{ field, message }] или

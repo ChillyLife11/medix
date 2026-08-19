@@ -3,13 +3,13 @@
 // а не в каждой вьюхе отдельно.
 //
 // Имена совпадают с ключами API:
-//   client_id — id клиента (после регистрации/авторизации, лежит в storage.userId)
+//   client_id — id клиента (после входа, лежит в @/session)
 //   master_id — id врача (из /coworker/index)
 //   branch_id — id филиала (из /branch/index)
 
 import { ref } from 'vue'
 import { COMPANY_ID } from '@/config'
-import { storage } from '@/lib/storage'
+import { clientId } from '@/session'
 
 const branchId = ref(null)
 const serviceId = ref(null)
@@ -41,7 +41,7 @@ function addMinutes(startTime, minutes) {
 function appointmentPayload() {
 	return {
 		company_id: COMPANY_ID,
-		client_id: Number(storage.userId) || null,
+		client_id: clientId.value,
 		branch_id: branchId.value,
 		master_id: masterId.value,
 		date: date.value,
@@ -56,7 +56,7 @@ function appointmentPayload() {
 // Все ли шаги пройдены (и известен клиент) — без этого запись отправлять нечего.
 function isComplete() {
 	return Boolean(
-		Number(storage.userId) &&
+		clientId.value &&
 		branchId.value &&
 		serviceId.value &&
 		masterId.value &&

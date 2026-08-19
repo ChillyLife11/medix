@@ -3,30 +3,18 @@ import UiBtn from '@/components/ui/UiBtn.vue'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { storage } from '@/lib/storage'
 
 const router = useRouter()
 const { signIn } = useAuth()
 
 // Согласие на ПДн предвыбрано, рассылку подставляем из localStorage.
 const personal_agree = ref(true)
-const marketing_agree = ref(storage.policy)
-const phone = ref(storage.phone ?? '')
+const marketing_agree = ref(localStorage.getItem('policy') === 'true')
 const submitting = ref(false)
 const error = ref('')
 
-// Приводим ввод к виду 71234567890 — как ждёт бэкенд.
-const normalizedPhone = computed(() => {
-	const digits = phone.value.replace(/\D/g, '')
-	return digits.startsWith('8') ? `7${digits.slice(1)}` : digits
-})
-
 const btn_disabled = computed(
-	() =>
-		!personal_agree.value ||
-		!marketing_agree.value ||
-		normalizedPhone.value.length !== 11 ||
-		submitting.value,
+	() => !personal_agree.value || !marketing_agree.value || submitting.value,
 )
 
 async function submit() {
@@ -35,8 +23,8 @@ async function submit() {
 	error.value = ''
 	try {
 		const consents = { privacy: personal_agree.value, policy: marketing_agree.value }
-		if (await signIn(normalizedPhone.value, consents)) router.replace('/profile')
-		else error.value = 'Клиент с таким номером не найден.'
+		if (await signIn(undefined, consents)) router.replace('/profile')
+		else error.value = 'Не удалось войти. Попробуйте позже.'
 	} finally {
 		submitting.value = false
 	}
@@ -69,15 +57,7 @@ async function submit() {
 					</div>
 				</label>
 			</div>
-			<input
-				v-model="phone"
-				type="tel"
-				inputmode="tel"
-				placeholder="Телефон"
-				class="w-full mt-5 py-3 px-5 rounded-full bg-card-darker text-center text-gray outline-none placeholder:text-gray/50"
-			/>
-
-			<div v-if="error" class="mt-2.5 text-13 text-center text-gray">{{ error }}</div>
+			<div v-if="error" class="mt-5 text-13 text-center text-gray">{{ error }}</div>
 
 			<UiBtn :disabled="btn_disabled" class="w-43 mt-5" @click="submit">
 				{{ submitting ? 'Проверяем…' : 'Отправить' }}

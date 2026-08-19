@@ -1,20 +1,26 @@
 import { api } from '@/api/http'
-import { cachedRequest, cachedResult, dropCache } from '@/lib/cache'
 
 // Филиалы клиники. Требует авторизации (Bearer).
 // Элемент: { id, title, latitude, longitude } — title это адрес филиала.
-// Список за сессию не меняется — запрашиваем один раз (см. lib/cache).
-const BRANCHES = 'branch/index'
+// За сессию список не меняется, а по шагам записи ходят вперёд-назад — поэтому
+// держим загруженное: повторный заход на экран не ждёт сеть.
+let branches = null
+let request = null
 
 export function getBranches() {
-	return cachedRequest(BRANCHES, () => api.get('/branch/index').then((r) => r.data ?? []))
+	if (!request) {
+		request = api
+			.get('/branch/index')
+			.then((r) => (branches = r.data ?? []))
+			.catch((e) => {
+				request = null
+				throw e
+			})
+	}
+	return request
 }
 
-// Уже загруженные филиалы (или undefined) — синхронно, для возврата на экран.
+// Уже загруженные филиалы (или null) — синхронно, для возврата на экран.
 export function loadedBranches() {
-	return cachedResult(BRANCHES)
-}
-
-export function dropBranchesCache() {
-	dropCache(BRANCHES)
+	return branches
 }

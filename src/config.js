@@ -6,6 +6,10 @@
 export const API_BASE = import.meta.env.VITE_API_BASE ?? '/api'
 export const COMPANY_ID = Number(import.meta.env.VITE_COMPANY_ID ?? 1)
 
+// Пока телефон брать неоткуда — вернётся из MAX (requestContact), когда
+// подключим мессенджер обратно. До тех пор входим по тестовому номеру.
+export const TEST_PHONE = '71111111113'
+
 // Картинки приходят путями вида /uploads/... — их нужно префиксовать хостом бэка
 // (прокси в dev настроен только на /api).
 export const MEDIA_BASE = import.meta.env.VITE_API_HOST ?? 'https://dental-web.pro'

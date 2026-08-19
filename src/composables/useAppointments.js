@@ -1,10 +1,10 @@
 // Записи клиента: загрузка + форматирование под карточки и слайдер.
 // Экземпляр состояния — на каждый экран свой: записи меняются, кешировать их
-// на сессию нельзя (в отличие от справочников в @/lib/cache).
+// на сессию нельзя (в отличие от филиалов и врачей).
 
 import { computed, ref } from 'vue'
 import { getAppointments, isCurrent } from '@/api/appointments'
-import { storage } from '@/lib/storage'
+import { clientId } from '@/session'
 
 // Экранам нужен и признак отмены — отдаём его отсюда же, чтобы вьюхи
 // импортировали всё из одного места.
@@ -72,15 +72,14 @@ export function useAppointments() {
 	const current = computed(() => appointments.value.filter((a) => isCurrent(a)))
 
 	async function load() {
-		const clientId = Number(storage.userId)
-		if (!clientId) {
+		if (!clientId.value) {
 			loading.value = false
 			return
 		}
 		loading.value = true
 		failed.value = false
 		try {
-			appointments.value = await getAppointments(clientId)
+			appointments.value = await getAppointments(clientId.value)
 		} catch (e) {
 			console.warn('[appointments] index failed', e)
 			failed.value = true
