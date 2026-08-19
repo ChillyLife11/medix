@@ -6,6 +6,7 @@
 const KEYS = {
 	token: 'token', // access_token, уходит в Bearer
 	userId: 'user_id', // id клиента в CRM (client_id в запросах)
+	phone: 'phone', // телефон, по которому входили
 	privacy: 'privacy', // согласие на обработку ПДн
 	policy: 'policy', // согласие на рассылку
 	companyId: 'company_id',
@@ -31,6 +32,9 @@ export const storage = {
 	get userId() {
 		return get(KEYS.userId)
 	},
+	get phone() {
+		return get(KEYS.phone)
+	},
 	get privacy() {
 		return get(KEYS.privacy) === 'true'
 	},
@@ -52,6 +56,11 @@ export const storage = {
 	clearSession() {
 		set(KEYS.token, null)
 		set(KEYS.userId, null)
+		set(KEYS.phone, null)
+	},
+
+	setPhone(phone) {
+		set(KEYS.phone, phone)
 	},
 
 	// Согласия — чтобы не показывать экран /agree повторно.

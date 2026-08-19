@@ -1,16 +1,16 @@
-// Авторизация клиента. Как в React-оригинале, в localStorage лежат только
-// токен и id клиента (+ флаги согласий) — см. @/lib/storage. Данные профиля
-// не сохраняем: они приходят из мессенджера или с сервера.
+// Вход клиента. Пока приложение обычное веб — идентификация по телефону:
+// спрашиваем номер, ищем клиента и сохраняем токен. Слоя мессенджера нет.
+// В localStorage лежат только токен, id клиента, телефон и флаги согласий
+// (см. @/lib/storage), профиль не сохраняем — он приходит с сервера.
 
 import { ref } from 'vue'
-import { checkChatId, registerMessenger } from '@/api/users'
-import { useMessenger } from '@/composables/useMessenger'
+import { getUserByPhone } from '@/api/users'
 import { storage } from '@/lib/storage'
 
 const token = ref(storage.token)
 const client = ref(null)
 
-// Сохраняем аккаунт из ответа бэка (check-chat-id / register).
+// Сохраняем аккаунт из ответа бэка.
 function persist(account) {
 	if (!account?.access_token) return false
 	token.value = account.access_token
@@ -20,41 +20,32 @@ function persist(account) {
 }
 
 export function useAuth() {
-	const { user } = useMessenger()
-
 	// Решает состояние авторизации: 'authed' | 'need-register'.
-	// Есть токен → авторизован; иначе по user.id спрашиваем check-chat-id.
+	// Есть токен — авторизован; иначе пробуем ранее введённый телефон.
 	async function checkAuth() {
 		if (token.value) return 'authed'
-		if (!user?.id) return 'need-register'
+		const phone = storage.phone
+		if (!phone) return 'need-register'
 		try {
-			const account = await checkChatId(user.id)
+			const account = await getUserByPhone(phone)
 			if (persist(account)) return 'authed'
 		} catch (e) {
-			console.warn('[auth] check-chat-id failed', e)
+			console.warn('[auth] by-phone failed', e)
 		}
 		return 'need-register'
 	}
 
-	// Регистрация через MAX: телефон, данные пользователя мессенджера и согласия.
-	async function register(phone, consents = { privacy: true, policy: true }) {
-		if (!user?.id) return false
+	// Вход по телефону с экрана согласий. Возвращает true, если клиент найден.
+	async function signIn(phone, consents = { privacy: true, policy: true }) {
+		if (!phone) return false
 		try {
-			const account = await registerMessenger('max', {
-				id: user.id,
-				phone,
-				first_name: user.firstName,
-				last_name: user.lastName,
-				username: user.username,
-				avatar: user.avatar ?? '',
-				privacy_accepted: consents.privacy,
-				policy_accepted: consents.policy,
-			})
+			const account = await getUserByPhone(phone)
 			if (!persist(account)) return false
+			storage.setPhone(phone)
 			storage.setConsents(consents)
 			return true
 		} catch (e) {
-			console.warn('[auth] register failed', e)
+			console.warn('[auth] sign-in failed', e)
 			return false
 		}
 	}
@@ -65,5 +56,5 @@ export function useAuth() {
 		storage.clearSession()
 	}
 
-	return { token, client, checkAuth, register, logout, saveAccount: persist }
+	return { token, client, checkAuth, signIn, logout, saveAccount: persist }
 }

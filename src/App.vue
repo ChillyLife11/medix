@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { RouterView, useRouter, useRoute } from 'vue-router'
-import { initMessenger } from '@/composables/useMessenger'
 import { api } from './api/http'
 
 const router = useRouter()
@@ -17,11 +16,8 @@ router.afterEach(() => {
 	lastPosition = current
 })
 
-// Инициализируем связь с мессенджером (MAX) при старте приложения.
-initMessenger()
-
 onMounted(() => {
-	api.get('/branch/index?filter[company_id]=1');
+	api.get('/branch/index?filter[company_id]=1')
 })
 </script>
 
