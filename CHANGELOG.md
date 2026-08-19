@@ -5,6 +5,16 @@
 Формат — [Keep a Changelog 1.0.0](https://keepachangelog.com/en/1.0.0/),
 версионирование — [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.11] - 2026-08-19
+
+### Changed
+
+- Картинки собираются в `dist/images`: статика переехала в `public/images`,
+  а для файлов, проходящих через сборщик, добавлено правило `assetFileNames`
+  в `vite.config.js` (шрифты и css остаются в `dist/assets`).
+- Пути к картинкам строятся от `import.meta.env.BASE_URL`, а не от корня домена:
+  абсолютные `/doctor-img.png` ломались бы в подпапке (GitHub Pages, `/max/<id>/`).
+
 ## [0.1.10] - 2026-08-19
 
 ### Added
