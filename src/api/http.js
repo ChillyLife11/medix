@@ -9,7 +9,7 @@ export const api = axios.create({
 })
 
 // В каждый запрос добавляем Authorization: Bearer <access_token>.
-// Токен приходит в ответе на авторизацию/регистрацию и лежит в localStorage.
+// Токен приходит в ответе на вход/регистрацию и живёт в памяти до перезагрузки.
 api.interceptors.request.use((config) => {
 	if (token.value) config.headers.Authorization = `Bearer ${token.value}`
 	return config

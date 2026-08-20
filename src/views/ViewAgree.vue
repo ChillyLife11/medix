@@ -7,9 +7,9 @@ import { useAuth } from '@/composables/useAuth'
 const router = useRouter()
 const { signIn } = useAuth()
 
-// Согласие на ПДн предвыбрано, рассылку подставляем из localStorage.
+// Согласие на ПДн предвыбрано.
 const personal_agree = ref(true)
-const marketing_agree = ref(localStorage.getItem('policy') === 'true')
+const marketing_agree = ref(false)
 const submitting = ref(false)
 const error = ref('')
 
@@ -22,8 +22,7 @@ async function submit() {
 	submitting.value = true
 	error.value = ''
 	try {
-		const consents = { privacy: personal_agree.value, policy: marketing_agree.value }
-		if (await signIn(undefined, consents)) router.replace('/profile')
+		if (await signIn()) router.replace('/profile')
 		else error.value = 'Не удалось войти. Попробуйте позже.'
 	} finally {
 		submitting.value = false
