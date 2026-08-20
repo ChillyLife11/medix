@@ -16,12 +16,11 @@ onMounted(async () => {
 </script>
 
 <template>
-	<div class="w-full h-full">
-		<img
-			:src="`${base}images/loading-img-2.png`"
-			alt=""
-			class="absolute inset-0 w-full h-full object-center object-cover"
-		/>
+	<div class="flex min-h-screen flex-col items-center justify-center px-2.5">
+		<img :src="`${base}images/logo.webp`" alt="" class="w-47 h-58 object-contain" />
+		<p class="max-w-96 text-center text-xl leading-[1.2] text-[#787878]">
+			СТОМАТОЛОГИЧЕСКАЯ КЛИНИКА ДОКТОРА ДАБАЕВА
+		</p>
 	</div>
 </template>
 
