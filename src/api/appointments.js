@@ -8,28 +8,47 @@ export function getAppointments(clientId) {
 		.then((r) => r.data ?? [])
 }
 
-// Статусы: 0 лист ожидания, 1 отправлен, 2 SMS, 4 подтверждён,
-// 5 выполнен, 6 отменён. Текущими считаем активные.
-const ACTIVE_STATUSES = [0, 1, 2, 4]
+// Статусы записи: 0 лист ожидания, 1 отправлен в МИС, 2 напоминание отправлено,
+// 4 подтверждено, 5 выполнено, 6 отменено.
+const COMPLETE_STATUS = 5
 const CANCELED_STATUS = 6
 
-// Текущие записи: активный статус (если он вообще пришёл) и дата не в прошлом.
-// Проверяем и то и другое: статус в ответе бывает не у всех записей, а «выполнен»
-// бэкенд проставляет не сразу.
-export function isCurrent(appointment, from = new Date()) {
-	if (appointment.status !== undefined && !ACTIVE_STATUSES.includes(Number(appointment.status))) {
-		return false
-	}
-	if (!appointment.date) return true
-	const [year, month, day] = appointment.date.split('-').map(Number)
-	const [hours, minutes] = (appointment.start ?? '23:59').split(':').map(Number)
-	return new Date(year, month - 1, day, hours, minutes) >= from
+// Запись ушла в историю — она выполнена (5) или отменена (6). Делим строго по
+// статусу, дата тут ни при чём: «выполнено» бэкенд проставляет не сразу, и до
+// этого запись остаётся в актуальных, даже если её время уже прошло.
+export function isHistorical(appointment) {
+	return isComplete(appointment) || isCanceled(appointment)
+}
+
+// Актуальные записи — всё остальное: лист ожидания, отправлено в МИС,
+// напоминание, подтверждено, а также записи без статуса в ответе.
+export function isCurrent(appointment) {
+	return !isHistorical(appointment)
 }
 
 // Отменённая запись — строго по статусу, дата тут ни при чём: в истории такие
 // показываем крестом, а не галочкой. Без статуса в ответе считаем неотменённой.
 export function isCanceled(appointment) {
 	return Number(appointment.status) === CANCELED_STATUS
+}
+
+// Выполненная запись — приём уже состоялся.
+export function isComplete(appointment) {
+	return Number(appointment.status) === COMPLETE_STATUS
+}
+
+// Что показывать в истории: галочку (выполнено), крест (отменено) или часы —
+// на всех остальных статусах, включая случай, когда статуса в ответе нет.
+export function statusKind(appointment) {
+	if (isComplete(appointment)) return 'complete'
+	if (isCanceled(appointment)) return 'canceled'
+	return 'pending'
+}
+
+// Отмена записи: id уходит query-параметром, в ответе — обновлённая запись
+// со статусом 6.
+export function cancelAppointment(id) {
+	return api.post('/appointment/cancel', null, { params: { id } }).then((r) => r.data)
 }
 
 // Создание записи. Тело собирает useBooking (appointmentPayload).

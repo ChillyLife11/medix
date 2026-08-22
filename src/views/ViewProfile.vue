@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import emblaCarouselVue from 'embla-carousel-vue'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
@@ -13,10 +14,25 @@ import {
 	timeRange,
 } from '@/composables/useAppointments'
 import { NotebookPen, CalendarDays, Clock, User, ChevronLeft, ChevronRight } from '@lucide/vue'
+import { useBooking } from '@/composables/useBooking'
+
+const router = useRouter()
+const { startBooking } = useBooking()
+
+// Две точки входа в запись — с них и начинается порядок шагов.
+function startFromBranch() {
+	startBooking('branch')
+	router.push('/branch')
+}
+
+function startFromService() {
+	startBooking('service')
+	router.push('/service')
+}
 
 // Актуальные записи в слайдере: по одной на слайд, листаются стрелками.
 // Берём current, а не весь список: прошедшие и отменённые живут в истории (/active).
-const { current, loading, failed, load } = useAppointments()
+const { current, loading, failed, load, cancel, canceling } = useAppointments()
 // Картинки лежат в public/images — путь строим от базы сборки.
 const base = import.meta.env.BASE_URL
 
@@ -29,9 +45,24 @@ const scrollNext = () => emblaApi.value?.scrollNext()
 const canScrollPrev = ref(false)
 const canScrollNext = ref(false)
 
+// Отменяем ту запись, которая сейчас на экране, — держим её индекс.
+const currentSlide = ref(0)
+
 function syncArrows() {
 	canScrollPrev.value = emblaApi.value?.canScrollPrev() ?? false
 	canScrollNext.value = emblaApi.value?.canScrollNext() ?? false
+	currentSlide.value = emblaApi.value?.selectedScrollSnap() ?? 0
+}
+
+const shownAppointment = computed(() => current.value[currentSlide.value] ?? null)
+
+async function cancelShown() {
+	if (!shownAppointment.value) return
+	if (await cancel(shownAppointment.value.id)) {
+		await nextTick()
+		emblaApi.value?.reInit()
+		syncArrows()
+	}
 }
 
 const hasAppointments = computed(() => !loading.value && !failed.value && current.value.length)
@@ -152,8 +183,21 @@ onMounted(async () => {
 				</button>
 			</div>
 
-			<div class="w-full p-3 rounded-full shadow-accent">
-				<UiBtn to="/branch" fluid>Записаться</UiBtn>
+			<!-- С записями блок кнопок идёт сразу под слайдером — тень тут лишняя -->
+			<div
+				:class="hasAppointments ? '' : 'shadow-accent'"
+				class="w-full p-3 space-y-2.5 rounded-full"
+			>
+				<UiBtn fluid @click="startFromBranch">Записаться</UiBtn>
+				<UiBtn
+					v-if="shownAppointment"
+					color="secondary"
+					:disabled="canceling"
+					fluid
+					@click="cancelShown"
+				>
+					{{ canceling ? 'Отменяем…' : 'Отменить запись' }}
+				</UiBtn>
 			</div>
 		</div>
 
@@ -164,12 +208,17 @@ onMounted(async () => {
 					Актуальные акции программы <br />стоматологической клиники
 				</div>
 			</RouterLink>
-			<div class="p-5 rounded-full bg-card shadow-accent">
+			<!-- Второй сценарий записи: сначала услуга, филиал уже под неё -->
+			<button
+				type="button"
+				class="block w-full p-5 rounded-full bg-card shadow-accent duration-100 active:scale-[0.98]"
+				@click="startFromService"
+			>
 				<div class="text-center text-xl text-brand">Услуги</div>
 				<div class="mt-2.5 mx-auto text-15 text-center text-gray opacity-70">
 					Выберите интересующую услугу из списка <br />или запишитесь на консультацию
 				</div>
-			</div>
+			</button>
 		</div>
 
 		<div class="flex flex-col items-center px-2.5 space-y-2.5">

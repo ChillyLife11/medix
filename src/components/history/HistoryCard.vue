@@ -1,11 +1,32 @@
 <script setup>
-import { X, Check } from '@lucide/vue'
+import { computed } from 'vue'
+import { X, Check, Clock } from '@lucide/vue'
 
 const $props = defineProps({
 	service: String,
 	doctor: String,
 	date: String,
-	canceled: Boolean,
+	// 'complete' — выполнена, 'canceled' — отменена, 'pending' — все остальные
+	// статусы: лист ожидания, отправлена в МИС, напоминание, подтверждена.
+	status: {
+		type: String,
+		default: 'pending',
+	},
+})
+
+// «Повторить» — новая запись к тому же врачу на ту же услугу; куда вести,
+// решает экран со списком.
+defineEmits(['repeat'])
+
+const icon = computed(() => {
+	switch ($props.status) {
+		case 'complete':
+			return Check
+		case 'canceled':
+			return X
+		default:
+			return Clock
+	}
 })
 </script>
 
@@ -16,13 +37,13 @@ const $props = defineProps({
 			<div class="grow text-center text-13 text-gray/70">{{ $props.service }}</div>
 			<div
 				:class="{
-					'text-brand': !$props.canceled,
-					'text-[#FF0000]': $props.canceled,
+					'text-brand': $props.status === 'complete',
+					'text-[#FF0000]': $props.status === 'canceled',
+					'text-gray/70': $props.status === 'pending',
 				}"
 				class="relative flex items-center justify-center w-11 h-11 rounded-full bg-card"
 			>
-				<X v-if="$props.canceled" stroke-width="1" />
-				<Check v-else stroke-width="1" />
+				<component :is="icon" stroke-width="1" />
 			</div>
 		</div>
 		<div
@@ -37,7 +58,8 @@ const $props = defineProps({
 			<div class="pl-4 text-13 text-gray/70">{{ $props.date }}</div>
 			<button
 				type="button"
-				class="flex items-center justify-center min-h-full rounded-full border border-brand"
+				class="flex items-center justify-center min-h-full rounded-full border border-brand duration-75 active:scale-[0.98]"
+				@click="$emit('repeat')"
 			>
 				Повторить
 			</button>
