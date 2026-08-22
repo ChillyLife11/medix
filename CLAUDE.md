@@ -60,80 +60,110 @@ src/
   views/                  # экраны (см. таблицу соответствия)
   api/                    # http.js (axios+Bearer+apiErrorMessage), users, branches,
                           # coworkers, promos, appointments
-  composables/            # useMessenger, useAuth, useBooking, useAppointments
-  lib/                    # storage.js (localStorage), cache.js (кеш запросов на сессию)
-  config.js               # API_BASE, COMPANY_ID, MEDIA_BASE, fileUrl
+  composables/            # useAuth, useBooking, useAppointments
+  session.js              # токен / client_id / телефон — только в памяти
+  config.js               # API_BASE, COMPANY_ID, MEDIA_BASE, TEST_PHONE, fileUrl
   components/
     ui/UiBtn.vue          # базовая кнопка (варианты color/soft/outline/icon/fluid, to→RouterLink)
     ui/UiLoader.vue       # общий индикатор загрузки
     ui/UiPageTitle.vue
+    ui/UiTabbar.vue       # нижний таббар: главная / запись / история
     doctor/DoctorCard.vue
-    history/HistoryCard.vue  # карточка записи (услуга / врач / дата + «Повторить»)
+    history/HistoryCard.vue  # карточка записи (услуга / врач / дата + иконка статуса)
     legal/LegalDialog.vue    # шторка «Правовая информация» (reka-ui Dialog)
   assets/fonts/           # Amstelvar, Open Sans
-public/                   # doctor-*.png, loading-*, favicon.svg, icons.svg
-index.html                # подключает https://st.max.ru/js/max-web-app.js
+public/                   # favicon.svg + images/ (doctor-*, loading-*, logo.webp, icons.svg)
+index.html                # обычный vite-шаблон (SDK мессенджера сейчас не подключён)
 ```
 
 ### Текущий статус
 **Готово:**
-- **связь с мессенджером MAX** — `src/composables/useMessenger.js`, инициализация
-  в `App.vue`;
-- **загрузочный флоу + авторизация**: сплэш `ViewHome` (`/`) ищет клиента и
-  разводит на `/profile` (нашли) или `/agree` (регистрация); `ViewAgree`
-  → `requestPhone()` + `register`;
-- **API-слой**: `src/config.js`, `src/api/http.js` (axios + Bearer + `apiErrorMessage`),
-  `users`, `branches`, `coworkers`, `promos`, `appointments`. Dev-прокси `/api`
-  на бэкенд в `vite.config.js`;
-- **сквозной флоу записи**: филиал → услуга → врач → дата/время → `POST
-  /appointment/create`. Выбор живёт в `src/composables/useBooking.js` (модульное
-  состояние + `appointmentPayload()` + `isComplete()`), после успеха — `reset()`
-  и переход на `/profile`;
-- **записи клиента**: `src/composables/useAppointments.js` (загрузка + форматтеры),
-  слайдер актуальных записей на `/profile`, список карточек на `/active`;
-- **кеш справочников на сессию** — `src/lib/cache.js`: филиалы и врачи
-  запрашиваются один раз, при возврате назад отдаются синхронно (без лоадера).
-  Расписание и записи **не кешируем** — они меняются.
+- **вход по телефону** (слоя мессенджера сейчас нет): сплэш `ViewHome` (`/`) зовёт
+  `checkAuth()` и разводит на `/profile` или `/agree`; `ViewAgree` — согласия и
+  `signIn()`. Номер берётся из `TEST_PHONE`, сессия живёт в памяти (`src/session.js`);
+- **API-слой**: `src/config.js`, `src/api/http.js` (axios + Bearer +
+  `apiErrorMessage` + разлогин на 401), `users`, `branches`, `coworkers`,
+  `promos`, `appointments`. Dev-прокси `/api` на бэкенд в `vite.config.js`;
+- **два сценария записи** (см. «Сценарии записи») → `POST /appointment/create`.
+  Выбор живёт в `src/composables/useBooking.js`: модульное состояние + `flow`,
+  `startBooking()`, `appointmentPayload()`, `isComplete()`. После успеха —
+  `reset()` и переход на `/profile`;
+- **записи клиента**: `src/composables/useAppointments.js` (загрузка, отмена,
+  форматтеры) отдаёт два списка — `current` (слайдер на `/profile`, кнопка
+  «Отменить запись») и `history` (карточки на `/active`, иконка по статусу);
+- **кеш справочников на сессию** — внутри `src/api/branches.js` (модульная
+  переменная + сохранённый промис): филиалы, а с ними услуги и врачи,
+  запрашиваются один раз; экраны берут данные синхронно, без запроса и лоадера
+  (`loadedBranches()`, `loadedBranch()`, `loadedAllServices()`,
+  `loadedBranchesWithService()`). Записи **не кешируем** — они меняются.
 
 **Ещё НЕ сделано:**
-- отмена и перенос записи (`/appointment/cancel`, `update`), кнопка «Повторить»
-  в карточке записи — пока не подключены;
+- перенос записи (`/appointment/update`);
 - имя/аватар клиента на экранах (сейчас заглушка «Иванов Иван»);
-- категории/услуги как отдельные сущности (`ViewCategory` на моках);
-- текст в `LegalDialog` — рыба (lorem ipsum), заменить на документы клиники.
+- категории как отдельная сущность: `ViewCategory` на моках и ни в один сценарий
+  не встроен;
+- текст в `LegalDialog` — рыба (lorem ipsum), заменить на документы клиники;
+- слой мессенджера MAX и вход по реальному номеру вместо `TEST_PHONE`.
 
 > ⚠️ **API: по факту работаем по СТАРЫМ (React) путям.** Хост — `VITE_API_HOST`
 > (сейчас `https://dental-web.pro`). Новый контракт из `Документация_API.md`
 > (ресурсы во множественном числе, id в пути) живой сервер не отдаёт, поэтому в
-> коде: `/branch/index`, `/coworker/index|view|get-schedule`, `/promo/index|view`,
-> `/appointment/index|create`, `/user/by-phone`. Во множественном числе остались
-> только `users/check-chat-id/{id}` и `users/register-telegram/{source}`.
+> коде живут только эти пути:
+> - `GET /branch/index` — филиалы **с вложенными `services[]` и `coworkers[]`**;
+>   отдельных запросов за услугами и врачами нет, каталог услуг собираем из этого
+>   же ответа;
+> - `GET /coworker/get-schedule?user_id=&branch_id=&date=` — расписание врача;
+>   функция в `api/coworkers.js` осталась, но **сейчас не вызывается** (см. сетку
+>   времени в «решениях»);
+> - `GET /promo/index`, `GET /promo/view`;
+> - `GET /appointment/index?filter[client_id]=&sort=-date`,
+>   `POST /appointment/create`, `POST /appointment/cancel?id=`;
+> - `GET /user/by-phone?phone=`, `POST /user/register-telegram?source=max`.
+>
 > Новый контракт — цель на будущее, но не переписывать вслепую: сверяться с тем,
 > что реально отвечает сервер (без токена всё отдаёт **401**).
+>
+> **Статусы записи:** `0` лист ожидания, `1` отправлен в МИС, `2` напоминание
+> отправлено, `4` подтверждено, `5` выполнено, `6` отменено. Поле называется
+> `status` и лежит в корне записи, но приходит **строкой** (`"6"`, не `6`) —
+> поэтому сравниваем через `Number()`. Проверено на живом ответе
+> `/appointment/index`: `id, date, start, end, status, timestamp, client,
+> services, categories, branch, master`. Делим их **строго по
+> статусу, без оглядки на дату**: `isHistorical()` — это `5` и `6` (экран истории),
+> `isCurrent()` — всё остальное, включая записи без статуса (слайдер на главной).
 
-### Слой мессенджера (MAX)
-Один простой composable — `src/composables/useMessenger.js`. SDK `window.WebApp`
-(скрипт `https://st.max.ru/js/max-web-app.js` уже в `index.html`) создаётся
-**синхронно** и разбирает данные пользователя из URL ещё до старта Vue — поэтому
-читаем их один раз, без поллинга/async/реактивности (за сессию не меняются).
-- `initMessenger()` — вызывает `WebApp.ready()` (один раз в `App.vue`).
-- `useMessenger()` → `{ user, isMax, initData, requestPhone() }`.
+### Авторизация: сейчас по телефону, слоя мессенджера нет
+`useMessenger`, SDK-скрипт в `index.html` и вход по данным MAX **удалены**.
+Сейчас: `useAuth.checkAuth()` → `signIn()` берёт `TEST_PHONE` из `src/config.js`,
+ищет клиента `GET /user/by-phone`, а если такого номера нет — регистрирует
+`POST /user/register-telegram?source=max`. В обоих случаях в ответе
+`access_token` → `setSession()` в `src/session.js`.
 
-Факты по SDK: глобал `window.WebApp`; `ready()` сигналит хосту; метода `expand()`
-**нет** (телеграмизм, не портируем); пользователь — `WebApp.initDataUnsafe.user`
-= `{ id, first_name, last_name, username, language_code, photo_url }`; `WebApp.platform`
-∈ `ios|android|desktop|web` (иначе `null` = вне MAX); телефон — `WebApp.requestContact()`.
-Нужен API-слой: по `user.id` вызвать `check-chat-id`; если нет — показать согласия
-(`ViewAgree`), запросить телефон `requestPhone()` и `register-telegram?source=max`.
+Сессия живёт только пока открыта страница: ни токен, ни `client_id` в
+`localStorage` не пишутся. Поэтому `router.beforeEach` при первой навигации
+всегда отправляет на `/` — сплэш заново находит клиента и получает свежий токен.
 
-### Локальная разработка под MAX
-У MAX нет эмулятора/dev-режима (офиц. доки: dev.max.ru/docs/webapps). Два контура:
-- **Браузер** (основное): `pnpm dev`, `isMax=false`. Вне MAX пользователя нет, поэтому
-  в DEV `useMessenger` подставляет тестового `user` (id: 1) — для отладки авторизации/записи.
-- **Реальный MAX**: нужен публичный HTTPS. Туннель (`cloudflared tunnel --url http://localhost:5173`
-  или `ngrok`), URL зарегистрировать в `business.max.ru/self` (Чат-боты → Расширенные
-  настройки), открыть через `https://max.ru/<bot>?startapp=`. В `vite.config.js` для этого
-  включены `server.host` и `server.allowedHosts`.
+Когда мессенджер вернём (факты по SDK проверены, менять не надо):
+- скрипт `https://st.max.ru/js/max-web-app.js` в `index.html`; глобал
+  `window.WebApp` создаётся **синхронно** и разбирает пользователя из URL ещё до
+  старта Vue — читать один раз, без поллинга/async/реактивности;
+- `WebApp.ready()` сигналит хосту; метода `expand()` **нет** (телеграмизм);
+- пользователь — `WebApp.initDataUnsafe.user` = `{ id, first_name, last_name,
+  username, language_code, photo_url }`; `WebApp.platform` ∈
+  `ios|android|desktop|web` (иначе `null` = вне MAX); телефон —
+  `WebApp.requestContact()`;
+- по `user.id` дёрнуть `users/check-chat-id`, если клиента нет — согласия
+  (`ViewAgree`) и `register-telegram?source=max` с реальным номером вместо `TEST_PHONE`.
+
+### Локальная разработка
+Основной контур — обычный браузер: `pnpm dev`, порт **5174** (задан в
+`vite.config.js`), вход по `TEST_PHONE`. Мока мессенджера не нужно — слоя нет.
+
+Для проверки в реальном MAX (когда слой вернём) нужен публичный HTTPS: туннель
+(`cloudflared tunnel --url http://localhost:5174` или `ngrok`), URL зарегистрировать
+в `business.max.ru/self` (Чат-боты → Расширенные настройки), открывать через
+`https://max.ru/<bot>?startapp=`. В `vite.config.js` для этого включены
+`server.host` и `server.allowedHosts`. Эмулятора/dev-режима у MAX нет.
 
 Официальные доки: `dev.max.ru/docs/webapps/{introduction,bridge,validation}`.
 
@@ -149,9 +179,10 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 Ещё workflow копирует `index.html` в `404.html`: Pages для неизвестного пути
 отдаёт `404.html`, и без этого прямой заход на `/profile` ломался бы.
 
-Роуты сейчас **плоские** (`/booking`, `/branch`, `/service`, `/category`,
-`/doctors`, `/datetime` и т.д.) — в оригинале это был единый экран `create` с
-модалкой и панелями. Мы разбили flow на отдельные экраны — это осознанно, наш UX.
+Роуты сейчас **плоские**: `/`, `/agree`, `/profile`, `/sale`, `/active`,
+`/branch`, `/service`, `/category`, `/doctors`, `/datetime` — в оригинале это был
+единый экран `create` с модалкой и панелями. Мы разбили flow на отдельные экраны —
+это осознанно, наш UX.
 
 ### Соответствие экранов (наш ↔ оригинал)
 | Наш роут / View            | Оригинал (React)                    | Назначение                         |
@@ -159,9 +190,9 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 | `ViewHome` `/`             | `pages/welcome`                     | сплэш/загрузка                     |
 | `ViewAgree` `/agree`       | `pages/welcome` (Popup+Checkbox)    | согласия ПДн перед регистрацией    |
 | `ViewProfile` `/profile`   | `pages/home/route` + `VisitCard`    | **главный экран**: слайдер записей, плитки, правовая информация, таббар |
-| `ViewActive` `/active`     | `pages/history` + `VisitCard`       | список текущих записей карточками  |
+| `ViewActive` `/active`     | `pages/history` + `VisitCard`       | история: выполненные и отменённые  |
 | `ViewSale` `/sale`         | `pages/home/promo`                  | акции                              |
-| `ViewService` `/service`   | `pages/home/services` / `SelectList`| список услуг                       |
+| `ViewService` `/service`   | `pages/home/services` / `SelectList`| выбор услуги (филиала или всей клиники) |
 | `ViewCategory` `/category` | `create` (панель category)          | выбор категории (на моках)         |
 | `ViewDoctors` `/doctors`   | (нет — новое)                       | выбор врача                        |
 | `ViewBranch` `/branch`     | `create` (branch)                   | выбор филиала                      |
@@ -169,8 +200,35 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 
 Главный экран — **`/profile`**: туда ведут сплэш, регистрация, возврат из акций
 и переход после успешного создания записи. Отдельного экрана истории нет
-(`/history` удалён) — все текущие записи показываются на `/profile` (слайдер)
-и на `/active` (список карточек `HistoryCard`).
+(`/history` удалён) — актуальные записи показываются на `/profile` (слайдер),
+а завершённые (выполненные и отменённые) карточками `HistoryCard` — на `/active`.
+Пересечения между списками нет: каждая запись попадает ровно в один.
+
+### Сценарии записи (наш UX)
+Сценария два, различаются только первыми двумя шагами. Порядок хранит `flow` в
+`useBooking`; точка входа объявляет его через `startBooking(kind)`, который заодно
+сбрасывает выбор от предыдущей записи.
+
+| `flow`      | Точка входа                                              | Порядок шагов                        |
+|-------------|----------------------------------------------------------|--------------------------------------|
+| `'branch'`  | «Записаться» на `/profile` и `/active`, плюс в таббаре    | филиал → услуга → врач → дата/время  |
+| `'service'` | плитка «Услуги» на `/profile` и `/active`                 | услуга → филиал → врач → дата/время  |
+
+- `ViewService`: в `'service'` показывает каталог **всех** услуг клиники
+  (`getAllServices()` — склейка `branch.services` по всем филиалам без дублей),
+  в `'branch'` — услуги выбранного филиала;
+- `ViewBranch`: в `'service'` показывает **только филиалы, где эта услуга есть**
+  (`getBranchesWithService()`). Если он один — остаётся один, карточка на всю
+  ширину и подсказка, но кнопку жмёт пользователь;
+- `ViewDoctors` одинаков в обоих: врачи филиала, отфильтрованные по услуге
+  (`coworker.services`);
+- точки входа — обработчики `@click`, а **не** `to="/branch"`: сценарий должен
+  задаваться явно, а не угадываться по состоянию;
+- **«Повторить»** в карточке истории — третий вход: `startRepeat()` подставляет
+  филиал, услугу и врача из прошлой записи (`repeatSelection()` достаёт
+  `branch.id`, `services[0].id`, `master.id`) и ведёт сразу на `/datetime`.
+  Дату и время не переносим — они в прошлом. Если чего-то из трёх в записи нет,
+  ведём на `/branch`: найденное уже подставлено, остальное выберут руками.
 
 ---
 
@@ -244,7 +302,7 @@ OOP-классы с геттерами/сеттерами и статическ�
 - `hooks/MessengerContext.tsx` — React-провайдер: нормализует пользователя, оборачивает
   WebApp, реализует `checkUserExists`, `register`, `requestPhoneNumber`.
   (`TelegramContext`/`MaxContext` — более старые отдельные реализации.)
-- MAX-скрипт: `https://st.max.ru/js/max-web-app.js` (уже подключён в **нашем** `index.html`).
+- MAX-скрипт: `https://st.max.ru/js/max-web-app.js` (в **нашем** `index.html` сейчас не подключён — слой мессенджера снят).
 - Регистрация: запрос контакта (`requestContact` → `phone`) + флаги согласий
   (`privacy`,`policy`) → `POST register-telegram`.
 
@@ -262,20 +320,37 @@ c `source: "max"`, `branch_id: 1`, датой `YYYY-MM-DD` и `start` из вы�
 
 ## Принятые решения и грабли (наш код)
 
-- **Время записи.** Слоты не берём из `get-schedule` как есть: из ответа читаем
-  только **границы дня** (первый и последний слот) и строим **статичную сетку с
-  шагом в час**; неполный час на краях отбрасываем (`09:30` → с `10:00`).
-  Часы раньше «сейчас + 1 час» видны, но `disabled` (граница пересчитывается раз
-  в минуту). Свободность конкретного часа проверяет бэкенд при создании записи.
+- **Время записи.** Сетка **статичная и от расписания врача не зависит**:
+  рабочий день клиники `09:00 … 18:00` с шагом в час (`WORK_FROM_HOUR` /
+  `WORK_TO_HOUR` в `ViewDatetime`), записаться можно на любой из этих часов.
+  `get-schedule` с экрана убран вместе с лоадером и ошибкой загрузки — свободен
+  ли конкретный час, проверяет бэкенд при создании записи.
+  Ограничение одно: **не раньше чем через час** от текущего времени (`LEAD_MS`) —
+  в 13:20 ближайший доступный час 15:00, а 14:00 уже нет. Прошедшие часы видны, но
+  `disabled`; `now` обновляется раз в минуту, поэтому граница едет вместе с часами.
+  На другие дни ограничение не действует — там доступны все часы.
 - **`end` в теле записи** — `start + 30 минут` (константа `APPOINTMENT_MINUTES`
   в `useBooking`), как в примере запроса от бэка. Сетка при этом часовая —
   вопрос к бэку открыт; если длительность придёт в услуге, считать от неё.
 - **`Status` в теле `appointment/create` — с большой буквы**, так поле называется
   в API. Не «исправлять».
-- **Кеш только для справочников.** `lib/cache.js` кеширует промис и результат по
-  ключу; экраны берут готовые данные синхронно (`loadedBranches()`,
-  `loadedCoworkers()`) — поэтому при возврате назад нет ни запроса, ни лоадера.
-  Ошибку не кешируем. Записи и расписание всегда запрашиваем заново.
+- **Кеш только для справочников** и живёт он **внутри `api/branches.js`**
+  (модульная переменная + сохранённый промис, отдельного `lib/cache.js` больше
+  нет). У каждого асинхронного геттера есть синхронный близнец `loaded*()`,
+  который отдаёт уже загруженное или `null` — поэтому при возврате назад нет ни
+  запроса, ни лоадера. Ошибку не кешируем (промис обнуляется). Записи всегда
+  запрашиваем заново.
+- **Услуги и врачи приходят вложенными в филиал** (`/branch/index`), своих
+  эндпоинтов у них нет. Каталог услуг = склейка `branch.services` по всем
+  филиалам с дедупликацией по `id`; id услуги сквозной — по нему же фильтруются
+  и филиалы, и врачи (`coworker.services`).
+- **Статусы записи → иконка в истории.** `statusKind()` в `api/appointments`
+  отдаёт `'complete' | 'canceled' | 'pending'`, `HistoryCard` принимает `status`
+  (не булев флаг): `5` — галочка, `6` — крест, всё остальное и отсутствие
+  статуса — часы.
+- **ФИО врача перепутаны местами** в ответе бэка: фамилия лежит в
+  `profile.first_name`, имя — в `profile.last_name`. В `ViewDoctors` это учтено,
+  не «чинить» переименованием.
 - **Embla инициализируется один раз в `onMounted`** и только если контейнер уже
   в DOM. Поэтому слайдер на `/profile` держим в DOM всегда (`v-show`, не `v-if`),
   а после загрузки данных зовём `emblaApi.reInit()`. Иначе стрелки мёртвые.
