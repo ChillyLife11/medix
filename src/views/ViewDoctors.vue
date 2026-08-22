@@ -5,48 +5,53 @@ import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
 import DoctorCard from '@/components/doctor/DoctorCard.vue'
-import { getCoworkers, loadedCoworkers } from '@/api/coworkers'
+import { getBranch, loadedBranch } from '@/api/branches'
+import { fileUrl } from '@/config'
 import { useBooking } from '@/composables/useBooking'
 
 const router = useRouter()
-const { serviceId, masterId } = useBooking()
+const { branchId, serviceId, masterId } = useBooking()
 
-// Заглушка, пока бэкенд не отдаёт фото врача (public/images).
+// Аватар приходит путём вида /uploads/Дабаев.jpg — префиксуем хостом бэка.
+// Если фото нет, показываем заглушку из public/images.
 const defaultPhoto = `${import.meta.env.BASE_URL}images/doctor-img.png`
+const photoOf = (c) => (c.profile?.avatar ? fileUrl(c.profile.avatar) : defaultPhoto)
 
 const doctors = ref([])
 const failed = ref(false)
 const selected = ref(null)
 
-// В ответе может не быть разложенного ФИО — тогда показываем username.
-const surnameOf = (c) => c.last_name || c.username
-const nameOf = (c) => [c.first_name, c.middle_name].filter(Boolean).join(' ')
+// ФИО лежит во вложенном profile, но у всех врачей с услугами поля перепутаны
+// местами: фамилия приходит в first_name, имя — в last_name.
+const surnameOf = (c) => c.profile?.first_name?.trim() || c.username
+const nameOf = (c) => c.profile?.last_name?.trim() ?? ''
 // Должность придёт с бэка позже — пока подставляем дефолт.
 const positionOf = (c) => c.position || 'Терапевт'
 
-// Оставляем только тех, кто оказывает выбранную услугу.
+// Оставляем только тех, кто оказывает выбранную услугу. У части сотрудников
+// филиала услуг нет вовсе — записаться к ним нельзя, в список они не попадают.
 const providesService = (coworker) =>
-	!serviceId.value || (coworker.services ?? []).some((s) => s.id === serviceId.value)
+	(coworker.services ?? []).some((s) => s.id === serviceId.value)
 
 // Ранее выбранного врача возвращаем, только если он есть в текущем списке:
 // после смены услуги он мог из него выпасть.
-function fill(coworkers) {
-	doctors.value = coworkers.filter(providesService)
+function fill(branch) {
+	doctors.value = (branch?.coworkers ?? []).filter(providesService)
 	const keepSelected = doctors.value.some((d) => d.id === masterId.value)
 	selected.value = keepSelected ? masterId.value : (doctors.value[0]?.id ?? null)
 }
 
-// При возврате назад врачи уже в кеше — берём их сразу, без запроса и лоадера.
-const cached = loadedCoworkers()
+// Врачи приходят вложенными в филиал — своего запроса у экрана нет.
+const cached = loadedBranch(branchId.value)
 if (cached) fill(cached)
 const loading = ref(!cached)
 
 onMounted(async () => {
 	if (!loading.value) return
 	try {
-		fill(await getCoworkers())
+		fill(await getBranch(branchId.value))
 	} catch (e) {
-		console.warn('[doctors] coworker/index failed', e)
+		console.warn('[doctors] branch/index failed', e)
 		failed.value = true
 	} finally {
 		loading.value = false
@@ -80,7 +85,7 @@ function submit() {
 				:surname="surnameOf(doctor)"
 				:name="nameOf(doctor)"
 				:specialty="positionOf(doctor)"
-				:photo="doctor.avatar || defaultPhoto"
+				:photo="photoOf(doctor)"
 				:selected="selected === doctor.id"
 				@click="selected = doctor.id"
 			/>

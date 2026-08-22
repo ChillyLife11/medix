@@ -1,36 +1,7 @@
 import { api } from '@/api/http'
-import { COMPANY_ID } from '@/config'
 
-// Сотрудники (врачи) клиники. Требует авторизации (Bearer).
-// Элемент: { id, username, email, status, company_id, client_id, created_at,
-// updated_at, last_login_at, services: [{ id, title, price, category_id, ... }] }
-// — список услуг специалиста приходит вместе с его данными.
-// Список нужен подряд на двух экранах (услуги и врачи) и при возврате назад —
-// поэтому держим загруженное и не ходим в сеть повторно.
-let coworkers = null
-let request = null
-
-export function getCoworkers() {
-	if (!request) {
-		request = api
-			.get('/coworker/index', { params: { 'filter[company_id]': COMPANY_ID, sort: '-id' } })
-			.then((r) => (coworkers = r.data ?? []))
-			.catch((e) => {
-				request = null
-				throw e
-			})
-	}
-	return request
-}
-
-// Уже загруженные врачи (или null) — синхронно, для возврата на экран.
-export function loadedCoworkers() {
-	return coworkers
-}
-
-export function getCoworker(id) {
-	return api.get('/coworker/view', { params: { id } }).then((r) => r.data)
-}
+// Расписание специалиста. Сам список врачей приходит внутри филиала
+// (см. @/api/branches), отдельного запроса за сотрудниками нет.
 
 // Свободные слоты специалиста на дату (date = YYYY-MM-DD).
 // master_id уезжает в параметре user_id — так его называет сам эндпоинт.
