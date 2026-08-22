@@ -18,7 +18,7 @@ const back = () => ($props.to ? router.push($props.to) : router.back())
 		<button
 			type="button"
 			aria-label="Назад"
-			class="shrink-0 -ml-1.5 text-brand duration-100 active:scale-90"
+			class="shrink-0 -ml-1.5 text-brand duration-75 active:scale-90"
 			@click="back"
 		>
 			<ChevronLeft :size="28" stroke-width="1.5" />

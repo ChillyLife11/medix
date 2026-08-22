@@ -139,7 +139,7 @@ const sections = [
 
 <template>
 	<DialogRoot>
-		<DialogTrigger class="text-xl underline text-brand duration-100 active:scale-95">
+		<DialogTrigger class="text-xl underline text-brand duration-75 active:scale-95">
 			Правовая информация
 		</DialogTrigger>
 
@@ -154,7 +154,7 @@ const sections = [
 				<div class="shrink-0 flex items-center gap-2.5 p-5 rounded-t-4xl bg-card">
 					<DialogTitle class="grow text-xl text-brand">Правовая информация</DialogTitle>
 					<DialogClose
-						class="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-card-darker text-gray duration-100 active:scale-90"
+						class="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-card-darker text-gray duration-75 active:scale-90"
 						aria-label="Закрыть"
 					>
 						<X :size="20" :stroke-width="1.5" />

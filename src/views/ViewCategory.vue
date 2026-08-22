@@ -20,7 +20,7 @@ const selected = ref('adult');
 				:key="category.key"
 				type="button"
 				:class="selected === category.key ? 'bg-card-darker shadow-accent' : 'bg-card'"
-				class="flex items-center justify-center min-h-22.75 p-2.5 rounded-4xl text-center text-15 text-gray duration-100 active:scale-95"
+				class="flex items-center justify-center min-h-22.75 p-2.5 rounded-4xl text-center text-15 text-gray duration-75 active:scale-95"
 				@click="selected = category.key"
 			>
 				{{ category.label }}

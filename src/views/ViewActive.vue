@@ -102,7 +102,7 @@ onMounted(load)
 			<!-- Второй сценарий записи: сначала услуга, филиал уже под неё -->
 			<button
 				type="button"
-				class="block w-full p-5 rounded-4xl bg-card shadow-accent duration-100 active:scale-[0.98]"
+				class="block w-full p-5 rounded-4xl bg-card shadow-accent duration-75 active:scale-[0.98]"
 				@click="startFromService"
 			>
 				<div class="text-center text-xl text-brand">Услуги</div>

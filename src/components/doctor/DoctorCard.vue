@@ -13,7 +13,7 @@ defineProps({
 	<button
 		type="button"
 		:class="selected ? 'shadow-accent' : 'shadow-[0px_4px_4px_rgba(0,0,0,0.12)]'"
-		class="relative w-full h-37 overflow-hidden rounded-[30px] bg-card-darker text-left duration-100 active:scale-[0.98]"
+		class="relative w-full h-37 overflow-hidden rounded-[30px] bg-card-darker text-left duration-75 active:scale-[0.98]"
 	>
 		<div class="relative z-10 py-5 pl-6 pr-30 space-y-0.5 text-gray">
 			<div class="text-15 font-semibold leading-tight">{{ surname }}</div>
