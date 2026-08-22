@@ -1,4 +1,6 @@
-// Состояние флоу записи: филиал → услуга → врач → дата/время.
+// Состояние флоу записи. Сценария два, различаются только первыми двумя шагами:
+//   'branch'  — филиал → услуга → врач → дата/время (кнопка «Записаться»)
+//   'service' — услуга → филиал → врач → дата/время (плитка «Услуги»)
 // Экраны разнесены по роутам, поэтому выбор держим в одном модульном состоянии,
 // а не в каждой вьюхе отдельно.
 //
@@ -11,6 +13,7 @@ import { ref } from 'vue'
 import { COMPANY_ID } from '@/config'
 import { clientId } from '@/session'
 
+const flow = ref('branch')
 const branchId = ref(null)
 const serviceId = ref(null)
 const masterId = ref(null)
@@ -23,6 +26,29 @@ function reset() {
 	masterId.value = null
 	date.value = null
 	time.value = null
+}
+
+// Старт нового флоу с точки входа: сбрасываем прошлый выбор (иначе экраны
+// подставят филиал и услугу от предыдущей записи) и запоминаем порядок шагов —
+// по нему экраны решают, что грузить и куда вести дальше.
+function startBooking(kind) {
+	reset()
+	flow.value = kind
+}
+
+// Сценарий «сначала услуга»: филиал выбирается уже под выбранную услугу.
+function isServiceFirst() {
+	return flow.value === 'service'
+}
+
+// Повтор записи из истории: подставляем прошлый выбор целиком, чтобы человеку
+// осталось выбрать только дату и время. Дату и время не переносим — они в прошлом.
+function startRepeat({ branch = null, service = null, master = null } = {}) {
+	reset()
+	flow.value = 'branch'
+	branchId.value = branch
+	serviceId.value = service
+	masterId.value = master
 }
 
 // Длительность приёма: бэкенд ждёт конец интервала (end). Сетка времени на
@@ -66,5 +92,18 @@ function isComplete() {
 }
 
 export function useBooking() {
-	return { branchId, serviceId, masterId, date, time, reset, appointmentPayload, isComplete }
+	return {
+		flow,
+		branchId,
+		serviceId,
+		masterId,
+		date,
+		time,
+		startBooking,
+		startRepeat,
+		isServiceFirst,
+		reset,
+		appointmentPayload,
+		isComplete,
+	}
 }

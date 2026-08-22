@@ -5,47 +5,47 @@ import { RadioGroupRoot, RadioGroupItem } from 'reka-ui'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
-import { getCoworkers, loadedCoworkers } from '@/api/coworkers'
+import { getAllServices, getBranch, loadedAllServices, loadedBranch } from '@/api/branches'
 import { useBooking } from '@/composables/useBooking'
 
 const router = useRouter()
-const { serviceId } = useBooking()
+const { branchId, serviceId, isServiceFirst } = useBooking()
 
-// Услуги приходят вместе с врачами — собираем уникальный список по всем
-// специалистам, чтобы показывать только то, на что реально можно записаться.
-function collectServices(coworkers) {
-	const map = new Map()
-	for (const coworker of coworkers) {
-		for (const service of coworker.services ?? []) {
-			if (!map.has(service.id)) map.set(service.id, service)
-		}
-	}
-	return [...map.values()]
+// Сценарий «сначала услуга»: филиала ещё нет, показываем каталог всех услуг
+// клиники. В обычном сценарии услуги приходят вложенными в выбранный филиал.
+const serviceFirst = isServiceFirst()
+
+function fill(list) {
+	services.value = list ?? []
+	const keepSelected = services.value.some((s) => s.id === serviceId.value)
+	selected.value = keepSelected ? serviceId.value : (services.value[0]?.id ?? null)
 }
 
-// При возврате назад врачи уже в кеше — берём их сразу, без запроса и лоадера.
-const cached = loadedCoworkers()
-const services = ref(cached ? collectServices(cached) : [])
-const loading = ref(!cached)
+const services = ref([])
 const failed = ref(false)
-const selected = ref(serviceId.value ?? services.value[0]?.id ?? null)
+const selected = ref(null)
+
+// При возврате назад филиалы уже в кеше — берём сразу, без запроса и лоадера.
+const cached = serviceFirst ? loadedAllServices() : (loadedBranch(branchId.value)?.services ?? null)
+if (cached) fill(cached)
+const loading = ref(!cached)
 
 onMounted(async () => {
 	if (!loading.value) return
 	try {
-		services.value = collectServices(await getCoworkers())
-		selected.value ??= services.value[0]?.id ?? null
+		fill(serviceFirst ? await getAllServices() : (await getBranch(branchId.value))?.services)
 	} catch (e) {
-		console.warn('[service] coworker/index failed', e)
+		console.warn('[service] branch/index failed', e)
 		failed.value = true
 	} finally {
 		loading.value = false
 	}
 })
 
+// Дальше в этом сценарии выбирают филиал — но уже только из тех, где услуга есть.
 function submit() {
 	serviceId.value = selected.value
-	router.push('/doctors')
+	router.push(serviceFirst ? '/branch' : '/doctors')
 }
 </script>
 
@@ -60,7 +60,8 @@ function submit() {
 		</div>
 
 		<div v-else-if="!services.length" class="p-5 rounded-4xl bg-card text-15 text-gray">
-			Услуги не найдены.
+			<template v-if="serviceFirst">Услуги не найдены. Попробуйте позже.</template>
+			<template v-else>В этом филиале услуг нет — выберите другой филиал.</template>
 		</div>
 
 		<RadioGroupRoot v-else v-model="selected" class="space-y-2.5">

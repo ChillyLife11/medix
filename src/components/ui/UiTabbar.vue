@@ -1,9 +1,18 @@
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import { House, Plus, GalleryHorizontalEnd } from '@lucide/vue'
+import { useBooking } from '@/composables/useBooking'
 
 const route = useRoute()
+const router = useRouter()
+const { startBooking } = useBooking()
+
+// Плюс — обычный сценарий записи: филиал → услуга → врач → дата/время.
+function startFromBranch() {
+	startBooking('branch')
+	router.push('/branch')
+}
 
 // На своём же экране кнопка остаётся на месте, но ссылкой не становится.
 const linkTo = (path) => (route.path === path ? undefined : path)
@@ -18,7 +27,7 @@ const linkTo = (path) => (route.path === path ? undefined : path)
 			<UiBtn :to="linkTo('/profile')" color="secondary" soft icon>
 				<House stroke-width="1.1" size="26" />
 			</UiBtn>
-			<UiBtn to="/branch" icon><Plus size="32" /></UiBtn>
+			<UiBtn icon @click="startFromBranch"><Plus size="32" /></UiBtn>
 			<UiBtn :to="linkTo('/active')" color="secondary" soft icon>
 				<GalleryHorizontalEnd stroke-width="1.1" size="26" />
 			</UiBtn>
