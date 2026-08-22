@@ -41,6 +41,7 @@ export default defineConfig(({ mode }) => {
 			host: true,
 			allowedHosts: true,
 			// прокси на бэкенд — обход CORS в dev (как в React-оригинале)
+			port: '5174',
 			proxy: {
 				'/api': {
 					target: apiHost,
