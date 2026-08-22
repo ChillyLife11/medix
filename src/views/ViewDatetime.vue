@@ -18,14 +18,12 @@ import {
 } from 'reka-ui'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
-import UiLoader from '@/components/ui/UiLoader.vue'
-import { getSchedule, scheduleTimes } from '@/api/coworkers'
 import { createAppointment } from '@/api/appointments'
 import { apiErrorMessage } from '@/api/http'
 import { useBooking } from '@/composables/useBooking'
 
 const router = useRouter()
-const { branchId, masterId, date, time, reset, appointmentPayload, isComplete } = useBooking()
+const { date, time, reset, appointmentPayload, isComplete } = useBooking()
 
 // Записаться можно только начиная с сегодняшнего дня.
 const minDate = today(getLocalTimeZone())
@@ -45,37 +43,30 @@ const periods = [
 ]
 const selectedPeriod = ref(periods[0].label)
 
-const hours = ref([])
-const loading = ref(false)
-const failed = ref(false)
 const selectedTime = ref(null)
 
 const hourOf = (t) => Number(t.split(':')[0])
 const minuteOf = (t) => Number(t.split(':')[1])
 
-// Плашки времени статичные, с шагом в час: 11:00, 12:00, 13:00 и так далее.
-// Из расписания берём только границы рабочего дня — первый и последний слот;
-// какие интервалы внутри реально свободны, проверяет бэкенд при создании записи.
-// Неполный час на краях отбрасываем: 09:30 → начинаем с 10:00, 17:30 → до 17:00.
-function hourlyGrid(slots) {
-	if (!slots.length) return []
-	const first = slots[0]
-	const last = slots[slots.length - 1]
-	const from = minuteOf(first) > 0 ? hourOf(first) + 1 : hourOf(first)
-	const grid = []
-	for (let hour = from; hour <= hourOf(last); hour++) {
-		grid.push(`${String(hour).padStart(2, '0')}:00`)
-	}
-	return grid
-}
+// Рабочий день клиники. Сетка статичная, с шагом в час: 09:00, 10:00 … 18:00 —
+// записаться можно на любой из этих часов. Занят ли конкретный час, проверяет
+// бэкенд при создании записи.
+const WORK_FROM_HOUR = 9
+const WORK_TO_HOUR = 18
+
+const hours = Array.from(
+	{ length: WORK_TO_HOUR - WORK_FROM_HOUR + 1 },
+	(_, i) => `${String(WORK_FROM_HOUR + i).padStart(2, '0')}:00`,
+)
 
 const visibleTimes = computed(() => {
 	const period = periods.find((p) => p.label === selectedPeriod.value)
-	return hours.value.filter((t) => hourOf(t) >= period.from && hourOf(t) < period.to)
+	return hours.filter((t) => hourOf(t) >= period.from && hourOf(t) < period.to)
 })
 
-// Записаться можно не раньше чем через час: прошедшее время и ближайший час
-// показываем, но выбрать их нельзя (кнопки disabled).
+// Записаться можно не раньше чем через час: в 13:20 ближайший доступный час —
+// 15:00, а 14:00 уже нет. Прошедшие часы показываем, но выбрать их нельзя
+// (кнопки disabled). На другие дни ограничение не действует — там доступны все.
 const LEAD_MS = 60 * 60 * 1000
 
 // «Сейчас» подтягиваем раз в минуту — экран может быть открыт долго, и граница
@@ -105,38 +96,17 @@ function isTooSoon(slot) {
 // Слоты, которые реально можно выбрать — из них берём автовыбор.
 const availableTimes = computed(() => visibleTimes.value.filter((t) => !isTooSoon(t)))
 
-async function loadTimes(dateValue) {
-	const isoDate = dateValue.toString() // YYYY-MM-DD
-	loading.value = true
-	failed.value = false
-	selectedTime.value = null
-	try {
-		const schedule = await getSchedule({
-			masterId: masterId.value,
-			branchId: branchId.value,
-			date: isoDate,
-		})
-		hours.value = hourlyGrid(scheduleTimes(schedule, isoDate))
-		showPeriodWithFreeSlot()
-	} catch (e) {
-		console.warn('[datetime] get-schedule failed', e)
-		failed.value = true
-		hours.value = []
-	} finally {
-		loading.value = false
-	}
-}
-
 // Если в первой половине дня выбирать уже нечего (всё прошло), сразу открываем
-// период, где есть свободный слот — иначе пользователь упирается в пустую сетку.
+// период, где есть свободный слот — иначе пользователь упирается в сетку,
+// где всё заблокировано.
 function showPeriodWithFreeSlot() {
 	const inPeriod = (period) =>
-		hours.value.some((t) => hourOf(t) >= period.from && hourOf(t) < period.to && !isTooSoon(t))
+		hours.some((t) => hourOf(t) >= period.from && hourOf(t) < period.to && !isTooSoon(t))
 	if (inPeriod(periods.find((p) => p.label === selectedPeriod.value))) return
 	selectedPeriod.value = (periods.find(inPeriod) ?? periods[0]).label
 }
 
-watch(selectedDate, loadTimes, { immediate: true })
+watch(selectedDate, showPeriodWithFreeSlot, { immediate: true })
 
 // Первый доступный слот в периоде — чтобы кнопка не была вечно заблокирована.
 watch(availableTimes, (list) => {
@@ -268,17 +238,11 @@ async function submit() {
 					</button>
 				</div>
 
-				<UiLoader v-if="loading" label="Загружаем свободное время" class="py-6" />
-
-				<div v-else-if="failed" class="py-4 text-13 text-center text-gray">
-					Не удалось загрузить расписание. Попробуйте позже.
+				<div v-if="!availableTimes.length" class="py-2 text-13 text-center text-gray">
+					На этот день свободного времени больше нет — выберите другой.
 				</div>
 
-				<div v-else-if="!visibleTimes.length" class="py-4 text-13 text-center text-gray">
-					На это время свободных слотов нет.
-				</div>
-
-				<div v-else class="grid grid-cols-4 gap-2.5">
+				<div class="grid grid-cols-4 gap-2.5">
 					<button
 						v-for="slot in visibleTimes"
 						:key="slot"
