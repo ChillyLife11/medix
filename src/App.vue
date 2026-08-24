@@ -20,7 +20,7 @@ onMounted(() => console.log('test'))
 
 <template>
 	<div class="flex min-h-screen *:w-full">
-		YOOO
+		YOOO2
 		
 		<!-- <RouterView v-slot="{ Component }">
 			<Transition :name="transition" mode="out-in">
