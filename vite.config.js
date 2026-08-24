@@ -19,20 +19,19 @@ export default defineConfig(({ mode }) => {
 		},
 		base: 'max/app-1/', // 👈 Базовый путь для сборки
 		build: {
-			outDir: 'dist/max/app-1', // 👈 Папка для сборки в Yii2
-			assetsDir: 'assets',
-			manifest: true, // 👈 Включаем манифест
 			rollupOptions: {
-				input: {
-					main: fileURLToPath(new URL('./src/main.js', import.meta.url)),
-				},
 				output: {
-					entryFileNames: 'assets/[name].[hash].js',
-					chunkFileNames: 'assets/[name].[hash].js',
-					assetFileNames: 'assets/[name].[hash].[ext]',
+					// Картинки складываем в dist/images, остальное (шрифты, css)
+					// остаётся в dist/assets. svg не берём — у нас это
+					// шрифтовые файлы Amstelvar/OpenSans.
+					assetFileNames: (asset) => {
+						const name = asset.names?.[0] ?? asset.name ?? ''
+						return /\.(png|jpe?g|webp|gif|avif)$/i.test(name)
+							? 'images/[name]-[hash][extname]'
+							: 'assets/[name]-[hash][extname]'
+					},
 				},
 			},
-			emptyOutDir: true,
 		},
 		server: {
 			// доступ по сети (для телефона в той же сети) и через туннель (cloudflared/ngrok),
