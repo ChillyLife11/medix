@@ -7,7 +7,6 @@ export function getBranches() {
 	console.log('Branches')
 	console.log('Branches')
 	console.log('Branches')
-	console.log('Branches')
 
 	return api.get('/branch/index').then((r) => r.data ?? [])
 }
