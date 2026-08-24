@@ -6,9 +6,14 @@
 export const API_BASE = import.meta.env.VITE_API_BASE ?? '/api'
 export const COMPANY_ID = Number(import.meta.env.VITE_COMPANY_ID ?? 1)
 
-// Пока телефон брать неоткуда — вернётся из MAX (requestContact), когда
-// подключим мессенджер обратно. До тех пор входим по тестовому номеру.
+// Боевой источник номера — MAX (`requestContact`, см. @/composables/useMessenger).
+// Тестовый номер нужен только для отладки в браузере, где мессенджера нет.
 export const TEST_PHONE = '71111111113'
+
+// В прод-сборке фолбэка нет вовсе: иначе сбой определения платформы (MAX отдал
+// неизвестный `platform`) молча пустил бы живого пользователя в тестовый
+// аккаунт — с чужими записями и без единой ошибки на экране.
+export const FALLBACK_PHONE = import.meta.env.DEV ? TEST_PHONE : null
 
 // Картинки приходят путями вида /uploads/... — их нужно префиксовать хостом бэка
 // (прокси в dev настроен только на /api).

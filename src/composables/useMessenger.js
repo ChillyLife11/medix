@@ -15,6 +15,23 @@ const isMax = Boolean(webApp && PLATFORMS.includes(webApp.platform))
 // language_code, photo_url }. Вне MAX его нет.
 const user = webApp?.initDataUnsafe?.user ?? null
 
+// «Иван Иванов» — как подписан аккаунт в мессенджере. Пустая строка, если
+// пользователя нет: экраны сами решают, чем это заменить.
+const userName = [user?.first_name, user?.last_name].filter(Boolean).join(' ')
+
+// Данные аккаунта для регистрации клиента (`register-telegram` ждёт их рядом с
+// номером). Вне MAX — пустой объект: в теле запроса лишних полей не появится.
+function userFields() {
+	if (!user) return {}
+	return {
+		id: user.id,
+		first_name: user.first_name ?? '',
+		last_name: user.last_name ?? '',
+		username: user.username ?? '',
+		avatar: user.photo_url ?? '',
+	}
+}
+
 // Отказ и ошибки приходят как { error: { code: 'client.request_phone.<reason>' } }.
 const REASONS = {
 	user_refused_provide_phone_number: 'refused',
@@ -48,5 +65,5 @@ async function requestPhone() {
 }
 
 export function useMessenger() {
-	return { isMax, user, requestPhone }
+	return { isMax, user, userName, userFields, requestPhone }
 }

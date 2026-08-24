@@ -15,9 +15,12 @@ import {
 } from '@/composables/useAppointments'
 import { NotebookPen, CalendarDays, Clock, User, ChevronLeft, ChevronRight } from '@lucide/vue'
 import { useBooking } from '@/composables/useBooking'
+import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
 const { startBooking } = useBooking()
+// Имя пациента — из аккаунта MAX (см. useAuth.clientName).
+const { clientName } = useAuth()
 
 // Две точки входа в запись — с них и начинается порядок шагов.
 function startFromBranch() {
@@ -110,7 +113,7 @@ onMounted(async () => {
 					class="absolute inset-0 w-full h-full rounded-full object-cover object-center"
 				/>
 			</div>
-			<div class="text-2xl text-gray">Иванов Иван</div>
+			<div class="text-2xl text-gray">{{ clientName }}</div>
 
 			<pre
 				class="w-full p-2 rounded-2xl bg-card-darker text-13 text-gray whitespace-pre-wrap break-all"

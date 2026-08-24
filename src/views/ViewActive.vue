@@ -14,9 +14,12 @@ import {
 	repeatSelection,
 } from '@/composables/useAppointments'
 import { useBooking } from '@/composables/useBooking'
+import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
 const { startBooking, startRepeat } = useBooking()
+// Имя пациента — из аккаунта MAX (см. useAuth.clientName).
+const { clientName } = useAuth()
 
 // Две точки входа в запись — с них и начинается порядок шагов.
 function startFromBranch() {
@@ -59,7 +62,7 @@ onMounted(load)
 					class="absolute inset-0 w-full h-full rounded-full object-cover object-center"
 				/>
 			</div>
-			<div class="text-lg text-gray">Иванов Иван</div>
+			<div class="text-lg text-gray">{{ clientName }}</div>
 
 			<div class="w-full max-w-67">
 				<UiBtn fluid @click="startFromBranch">Записаться</UiBtn>

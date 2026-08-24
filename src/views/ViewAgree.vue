@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useMessenger } from '@/composables/useMessenger'
-import { TEST_PHONE } from '@/config'
+import { FALLBACK_PHONE } from '@/config'
 
 const router = useRouter()
 const { signIn } = useAuth()
@@ -16,6 +16,7 @@ const PHONE_ERRORS = {
 	refused: 'Без номера телефона записаться нельзя — нажмите «Отправить» и поделитесь контактом.',
 	'request-error': 'Мессенджер не отдал номер. Попробуйте ещё раз.',
 	unknown: 'Не удалось получить номер телефона. Попробуйте ещё раз.',
+	'no-sdk': 'Откройте приложение в MAX — номер телефона приходит оттуда.',
 }
 
 // Согласие на ПДн предвыбрано.
@@ -28,20 +29,21 @@ const btn_disabled = computed(
 	() => !personal_agree.value || !marketing_agree.value || submitting.value,
 )
 
-// В MAX номер спрашиваем у мессенджера — сюда пользователь попадает как раз для
-// того, чтобы дать согласия и поделиться контактом. Вне MAX (браузер, отладка)
-// номера взять неоткуда, поэтому остаётся тестовый из конфига.
+// Номер спрашиваем у мессенджера — сюда пользователь попадает как раз для того,
+// чтобы дать согласия и поделиться контактом. В MAX фолбэка нет: не дал номер —
+// не вошёл. Отладочный номер подставляется только в dev-сборке вне мессенджера.
 async function submit() {
 	if (btn_disabled.value) return
 	submitting.value = true
 	error.value = ''
 	try {
 		const { phone, reason } = await requestPhone()
-		if (!phone && isMax) {
+		const userPhone = phone ?? (isMax ? null : FALLBACK_PHONE)
+		if (!userPhone) {
 			error.value = PHONE_ERRORS[reason] ?? PHONE_ERRORS.unknown
 			return
 		}
-		if (await signIn(phone ?? TEST_PHONE)) router.replace('/profile')
+		if (await signIn(userPhone)) router.replace('/profile')
 		else error.value = 'Не удалось войти. Попробуйте позже.'
 	} finally {
 		submitting.value = false
