@@ -3,9 +3,20 @@ import UiBtn from '@/components/ui/UiBtn.vue'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { useMessenger } from '@/composables/useMessenger'
+import { TEST_PHONE } from '@/config'
 
 const router = useRouter()
 const { signIn } = useAuth()
+const { isMax, requestPhone } = useMessenger()
+
+// Текст под кнопкой, если номер получить не удалось. Отказ — не ошибка
+// приложения, поэтому объясняем, что делать дальше.
+const PHONE_ERRORS = {
+	refused: 'Без номера телефона записаться нельзя — нажмите «Отправить» и поделитесь контактом.',
+	'request-error': 'Мессенджер не отдал номер. Попробуйте ещё раз.',
+	unknown: 'Не удалось получить номер телефона. Попробуйте ещё раз.',
+}
 
 // Согласие на ПДн предвыбрано.
 const personal_agree = ref(true)
@@ -17,12 +28,20 @@ const btn_disabled = computed(
 	() => !personal_agree.value || !marketing_agree.value || submitting.value,
 )
 
+// В MAX номер спрашиваем у мессенджера — сюда пользователь попадает как раз для
+// того, чтобы дать согласия и поделиться контактом. Вне MAX (браузер, отладка)
+// номера взять неоткуда, поэтому остаётся тестовый из конфига.
 async function submit() {
 	if (btn_disabled.value) return
 	submitting.value = true
 	error.value = ''
 	try {
-		if (await signIn()) router.replace('/profile')
+		const { phone, reason } = await requestPhone()
+		if (!phone && isMax) {
+			error.value = PHONE_ERRORS[reason] ?? PHONE_ERRORS.unknown
+			return
+		}
+		if (await signIn(phone ?? TEST_PHONE)) router.replace('/profile')
 		else error.value = 'Не удалось войти. Попробуйте позже.'
 	} finally {
 		submitting.value = false
