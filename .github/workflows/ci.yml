@@ -103,8 +103,7 @@ jobs:
             --data-urlencode "company_id=${{ secrets.COMPANY_ID }}" \
             --data-urlencode "artifact_name=$ARCHIVE_NAME" \
             --fail \
-            --show-error \
-            --verbose
+            --show-error
 
       - name: Cleanup
         run: |
