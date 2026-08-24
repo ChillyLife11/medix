@@ -72,8 +72,7 @@ jobs:
       - name: Debug - check server paths
         run: |
           ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "pwd && ls -la ~/ && ls -la ~/dental-web.pro/ 2>/dev/null || echo 'Directory not found'"
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}
 
       - name: Upload archive to server
         env:
