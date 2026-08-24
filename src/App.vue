@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { RouterView, useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
@@ -14,18 +14,14 @@ router.afterEach(() => {
 	transition.value = current < lastPosition ? 'slide-right' : 'slide-left'
 	lastPosition = current
 })
-
-onMounted(() => console.log('test'))
 </script>
 
 <template>
 	<div class="flex min-h-screen *:w-full">
-		YOOO2ы22
-		
-		<!-- <RouterView v-slot="{ Component }">
+		<RouterView v-slot="{ Component }">
 			<Transition :name="transition" mode="out-in">
 				<component :is="Component" :key="route.fullPath" />
 			</Transition>
-		</RouterView> -->
+		</RouterView>
 	</div>
 </template>
