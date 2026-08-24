@@ -30,6 +30,26 @@ function startFromService() {
 	router.push('/service')
 }
 
+// Временно: смотрим, доезжает ли SDK MAX в реальном клиенте. В шаблоне `window`
+// недоступен (компилятор резолвит имена по инстансу и белому списку глобалов),
+// поэтому собираем строку здесь. Сам объект в интерполяции не показать — методы
+// при сериализации теряются, поэтому выводим то, что реально о нём говорит:
+// платформу, пользователя и какие из ожидаемых членов SDK на месте.
+const webAppProbe = (() => {
+	const app = window.WebApp
+	if (!app) return 'window.WebApp отсутствует'
+	const members = ['platform', 'initDataUnsafe', 'ready', 'requestContact']
+	return JSON.stringify(
+		{
+			platform: app.platform ?? null,
+			user: app.initDataUnsafe?.user ?? null,
+			has: members.filter((name) => app[name] !== undefined),
+		},
+		null,
+		2,
+	)
+})()
+
 // Актуальные записи в слайдере: по одной на слайд, листаются стрелками.
 // Берём current, а не весь список: прошедшие и отменённые живут в истории (/active).
 const { current, loading, failed, load, cancel, canceling } = useAppointments()
@@ -92,10 +112,10 @@ onMounted(async () => {
 			</div>
 			<div class="text-2xl text-gray">Иванов Иван</div>
 
-			<pre>
-				{{ window?.WebApp }}
-			</pre>
-			
+			<pre
+				class="w-full p-2 rounded-2xl bg-card-darker text-13 text-gray whitespace-pre-wrap break-all"
+				>{{ webAppProbe }}</pre>
+
 			<UiLoader v-if="loading" label="Загружаем записи" class="py-2" />
 
 			<div v-else-if="failed" class="text-13 text-center text-gray opacity-70">
