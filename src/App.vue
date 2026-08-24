@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { RouterView, useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
@@ -14,6 +14,8 @@ router.afterEach(() => {
 	transition.value = current < lastPosition ? 'slide-right' : 'slide-left'
 	lastPosition = current
 })
+
+onMounted(() => console.log('test'))
 </script>
 
 <template>
