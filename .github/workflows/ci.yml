@@ -43,7 +43,7 @@ jobs:
     needs: build-and-archive
     runs-on: ubuntu-latest
     environment: test
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/pre-prod'
     steps:
       - name: Download deployment archive
         uses: actions/download-artifact@v4
@@ -72,8 +72,7 @@ jobs:
       - name: Debug - check server paths
         run: |
           ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "pwd && ls -la ~/ && ls -la ~/dental-web.pro/ 2>/dev/null || echo 'Directory not found'"
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}
 
       - name: Upload archive to server
         env:
@@ -104,8 +103,7 @@ jobs:
             --data-urlencode "company_id=${{ secrets.COMPANY_ID }}" \
             --data-urlencode "artifact_name=$ARCHIVE_NAME" \
             --fail \
-            --show-error \
-            --verbose
+            --show-error
 
       - name: Cleanup
         run: |
