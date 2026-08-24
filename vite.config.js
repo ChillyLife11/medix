@@ -11,13 +11,10 @@ export default defineConfig(({ mode }) => {
 	const apiHost = env.VITE_API_HOST ?? 'https://dental-web.pro'
 
 	return {
+		// На GitHub Pages приложение живёт в подпапке (/<repo>/), поэтому база
+		// приходит из VITE_BASE (её задаёт workflow). Локально — корень.
+		base: env.VITE_BASE ?? '/',
 		plugins: [vue(), tailwindcss()],
-		resolve: {
-			alias: {
-				'@': fileURLToPath(new URL('./src', import.meta.url)),
-			},
-		},
-		base: 'max/app-1/', // 👈 Базовый путь для сборки
 		build: {
 			rollupOptions: {
 				output: {
@@ -33,12 +30,18 @@ export default defineConfig(({ mode }) => {
 				},
 			},
 		},
+		resolve: {
+			alias: {
+				'@': fileURLToPath(new URL('./src', import.meta.url)),
+			},
+		},
 		server: {
 			// доступ по сети (для телефона в той же сети) и через туннель (cloudflared/ngrok),
 			// чтобы открывать мини-апп в реальном клиенте MAX
 			host: true,
 			allowedHosts: true,
 			// прокси на бэкенд — обход CORS в dev (как в React-оригинале)
+			port: '5174',
 			proxy: {
 				'/api': {
 					target: apiHost,

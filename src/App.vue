@@ -21,7 +21,6 @@ router.afterEach(() => {
 initMessenger()
 
 onMounted(() => {
-	console.log(this);
 	api.get('/branch/index?filter[company_id]=1');
 })
 </script>
