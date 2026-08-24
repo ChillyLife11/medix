@@ -92,6 +92,10 @@ onMounted(async () => {
 			</div>
 			<div class="text-2xl text-gray">Иванов Иван</div>
 
+			<pre>
+				{{ window?.WebApp }}
+			</pre>
+			
 			<UiLoader v-if="loading" label="Загружаем записи" class="py-2" />
 
 			<div v-else-if="failed" class="text-13 text-center text-gray opacity-70">
