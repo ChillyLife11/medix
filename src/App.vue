@@ -20,10 +20,12 @@ onMounted(() => console.log('test'))
 
 <template>
 	<div class="flex min-h-screen *:w-full">
-		<RouterView v-slot="{ Component }">
+		AAAA
+		
+		<!-- <RouterView v-slot="{ Component }">
 			<Transition :name="transition" mode="out-in">
 				<component :is="Component" :key="route.fullPath" />
 			</Transition>
-		</RouterView>
+		</RouterView> -->
 	</div>
 </template>
