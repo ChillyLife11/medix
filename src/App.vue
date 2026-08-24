@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { RouterView, useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
@@ -13,6 +13,10 @@ router.afterEach(() => {
 	const current = window.history.state?.position ?? 0
 	transition.value = current < lastPosition ? 'slide-right' : 'slide-left'
 	lastPosition = current
+})
+
+onMounted(() => {
+	alert(window.WebApp);
 })
 </script>
 
