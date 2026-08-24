@@ -60,7 +60,7 @@ src/
   views/                  # экраны (см. таблицу соответствия)
   api/                    # http.js (axios+Bearer+apiErrorMessage), users, branches,
                           # coworkers, promos, appointments
-  composables/            # useAuth, useBooking, useAppointments
+  composables/            # useAuth, useMessenger, useBooking, useAppointments
   session.js              # токен / client_id / телефон — только в памяти
   config.js               # API_BASE, COMPANY_ID, MEDIA_BASE, TEST_PHONE, fileUrl
   components/
@@ -73,7 +73,7 @@ src/
     legal/LegalDialog.vue    # шторка «Правовая информация» (reka-ui Dialog)
   assets/fonts/           # Amstelvar, Open Sans
 public/                   # favicon.svg + images/ (doctor-*, loading-*, logo.webp, icons.svg)
-index.html                # обычный vite-шаблон (SDK мессенджера сейчас не подключён)
+index.html                # подключает https://st.max.ru/js/max-web-app.js (SDK MAX)
 ```
 
 ### Текущий статус
@@ -103,7 +103,9 @@ index.html                # обычный vite-шаблон (SDK мессенд
 - категории как отдельная сущность: `ViewCategory` на моках и ни в один сценарий
   не встроен;
 - текст в `LegalDialog` — рыба (lorem ipsum), заменить на документы клиники;
-- слой мессенджера MAX и вход по реальному номеру вместо `TEST_PHONE`.
+- опознание клиента по `users/check-chat-id` и передача в регистрацию данных
+  пользователя MAX (`id`, имя, `username`, аватар) — сейчас в
+  `register-telegram` уходит только номер.
 
 > ⚠️ **API: по факту работаем по СТАРЫМ (React) путям.** Хост — `VITE_API_HOST`
 > (сейчас `https://dental-web.pro`). Новый контракт из `Документация_API.md`
@@ -132,34 +134,54 @@ index.html                # обычный vite-шаблон (SDK мессенд
 > статусу, без оглядки на дату**: `isHistorical()` — это `5` и `6` (экран истории),
 > `isCurrent()` — всё остальное, включая записи без статуса (слайдер на главной).
 
-### Авторизация: сейчас по телефону, слоя мессенджера нет
-`useMessenger`, SDK-скрипт в `index.html` и вход по данным MAX **удалены**.
-Сейчас: `useAuth.checkAuth()` → `signIn()` берёт `TEST_PHONE` из `src/config.js`,
-ищет клиента `GET /user/by-phone`, а если такого номера нет — регистрирует
+### Авторизация: номер из MAX, вне MAX — тестовый
+`src/composables/useMessenger.js` — весь слой мессенджера: `{ isMax, user,
+requestPhone() }`. Глобал `window.WebApp` читаем **один раз на модуль**, без
+поллинга и реактивности: SDK создаёт его синхронно ещё до старта Vue и за сессию
+он не меняется.
+
+- `isMax` — по `WebApp.platform` (`ios|android|desktop|web`), а **не** по наличию
+  глобала: скрипт SDK грузится и в обычном браузере;
+- `requestPhone()` → `WebApp.requestContact()`, промис `{ phone, authDate, hash }`.
+  Номер приходит **без «+»** — ровно как ждёт бэкенд. Возвращаем
+  `{ phone, reason }` вместо исключения: отказ пользователя — штатный сценарий.
+  `reason` ∈ `no-sdk | refused | request-error | unknown`, коды мессенджера —
+  `client.request_phone.<reason>`.
+
+Дальше номер уходит в обычный вход: `signIn(phone)` ищет клиента
+`GET /user/by-phone`, а если такого номера нет — регистрирует
 `POST /user/register-telegram?source=max`. В обоих случаях в ответе
 `access_token` → `setSession()` в `src/session.js`.
+
+**Где спрашиваем номер.** Только на `ViewAgree` по кнопке «Отправить»: MAX отдаёт
+контакт лишь по действию пользователя. Поэтому `checkAuth()` в MAX **не** входит
+по `TEST_PHONE`, а сразу ведёт на согласия — иначе сплэш молча логинил бы
+тестового клиента и экран с запросом номера не показался бы никогда. Вне MAX
+всё как было: вход по `TEST_PHONE`, чтобы отладка в браузере не упиралась в
+экран согласий.
 
 Сессия живёт только пока открыта страница: ни токен, ни `client_id` в
 `localStorage` не пишутся. Поэтому `router.beforeEach` при первой навигации
 всегда отправляет на `/` — сплэш заново находит клиента и получает свежий токен.
 
-Когда мессенджер вернём (факты по SDK проверены, менять не надо):
-- скрипт `https://st.max.ru/js/max-web-app.js` в `index.html`; глобал
-  `window.WebApp` создаётся **синхронно** и разбирает пользователя из URL ещё до
-  старта Vue — читать один раз, без поллинга/async/реактивности;
+Остальные факты по SDK (проверены, менять не надо):
 - `WebApp.ready()` сигналит хосту; метода `expand()` **нет** (телеграмизм);
 - пользователь — `WebApp.initDataUnsafe.user` = `{ id, first_name, last_name,
-  username, language_code, photo_url }`; `WebApp.platform` ∈
-  `ios|android|desktop|web` (иначе `null` = вне MAX); телефон —
-  `WebApp.requestContact()`;
-- по `user.id` дёрнуть `users/check-chat-id`, если клиента нет — согласия
-  (`ViewAgree`) и `register-telegram?source=max` с реальным номером вместо `TEST_PHONE`.
+  username, language_code, photo_url }`;
+- следующий шаг — опознавать клиента по `user.id` через `users/check-chat-id` и
+  передавать его данные в `register-telegram?source=max` (сейчас туда уходит
+  только номер).
+
+Официальная документация по мосту: `dev.max.ru/docs/webapps/bridge`.
 
 ### Локальная разработка
 Основной контур — обычный браузер: `pnpm dev`, порт **5174** (задан в
-`vite.config.js`), вход по `TEST_PHONE`. Мока мессенджера не нужно — слоя нет.
+`vite.config.js`). Там `isMax = false`, номер спросить не у кого — вход идёт по
+`TEST_PHONE`. Отдельного мока SDK нет: чтобы прогнать ветку с мессенджером,
+достаточно подставить `window.WebApp` с `platform` и `requestContact()` до
+загрузки приложения.
 
-Для проверки в реальном MAX (когда слой вернём) нужен публичный HTTPS: туннель
+Для проверки в реальном MAX нужен публичный HTTPS: туннель
 (`cloudflared tunnel --url http://localhost:5174` или `ngrok`), URL зарегистрировать
 в `business.max.ru/self` (Чат-боты → Расширенные настройки), открывать через
 `https://max.ru/<bot>?startapp=`. В `vite.config.js` для этого включены
