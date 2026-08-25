@@ -255,7 +255,7 @@ MAX однажды отдаст неизвестный `platform`, `isMax` ст�
 | `ViewHome` `/`             | `pages/welcome`                     | сплэш/загрузка                     |
 | `AgreeDialog` (в `ViewHome`) | `pages/welcome` (Popup+Checkbox)  | согласия ПДн перед регистрацией — окно поверх сплэша, без своего роута |
 | `ViewProfile` `/profile`   | `pages/home/route` + `VisitCard`    | **главный экран**: слайдер записей, плитки, правовая информация, таббар |
-| `ViewActive` `/active`     | `pages/history` + `VisitCard`       | история: выполненные и отменённые  |
+| `ViewActive` `/active`     | `pages/history` + `VisitCard`       | история: выполненные и отменённые — только карточки и заголовок со стрелкой на `/profile` |
 | `ViewSale` `/sale`         | `pages/home/promo`                  | акции                              |
 | `ViewService` `/service`   | `pages/home/services` / `SelectList`| выбор услуги (филиала или всей клиники) |
 | `ViewCategory` `/category` | `create` (панель category)          | выбор категории (на моках)         |
@@ -276,8 +276,8 @@ MAX однажды отдаст неизвестный `platform`, `isMax` ст�
 
 | `flow`      | Точка входа                                              | Порядок шагов                        |
 |-------------|----------------------------------------------------------|--------------------------------------|
-| `'branch'`  | «Записаться» на `/profile` и `/active`, плюс в таббаре    | филиал → услуга → врач → дата/время  |
-| `'service'` | плитка «Услуги» на `/profile` и `/active`                 | услуга → филиал → врач → дата/время  |
+| `'branch'`  | «Записаться» на `/profile`, плюс в таббаре                | филиал → услуга → врач → дата/время  |
+| `'service'` | плитка «Услуги» на `/profile`                             | услуга → филиал → врач → дата/время  |
 
 - `ViewService`: в `'service'` показывает каталог **всех** услуг клиники
   (`getAllServices()` — склейка `branch.services` по всем филиалам без дублей),
