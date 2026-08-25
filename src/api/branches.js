@@ -1,4 +1,5 @@
 import { api } from '@/api/http'
+import { LEAD_MS } from '@/composables/useBooking'
 
 // Филиалы клиники. Требует авторизации (Bearer).
 // Элемент: { id, title, address, company_id, services[], coworkers[] } —
@@ -106,4 +107,20 @@ export function shortAddress(branch) {
 	const [street, ...rest] = parts
 	const named = /^(ул|улица|просп|пр-т|мкр|бул)/i.test(street) ? street : `ул. ${street}`
 	return [named, ...rest].join(', ')
+}
+
+// Ближайшие свободные часы врача — для карточки на экране выбора врача.
+// Идём по датам расписания с начала и берём первый день, где ещё осталось
+// время: прошедшие часы и ближайший час от «сейчас» не в счёт, как и на
+// экране выбора времени.
+export function nearestSlots(branch, masterId, count = 3) {
+	const schedule = branch?.schedule ?? {}
+	const now = Date.now()
+	for (const date of Object.keys(schedule).sort()) {
+		const times = (schedule[date]?.[masterId] ?? []).filter(
+			(time) => new Date(`${date}T${time}`).getTime() - now >= LEAD_MS,
+		)
+		if (times.length) return { date, times: times.slice(0, count) }
+	}
+	return null
 }

@@ -1,11 +1,11 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
 import DoctorCard from '@/components/doctor/DoctorCard.vue'
-import { getBranch, loadedBranch } from '@/api/branches'
+import { getBranch, loadedBranch, nearestSlots } from '@/api/branches'
 import { fileUrl } from '@/config'
 import { useBooking } from '@/composables/useBooking'
 
@@ -17,6 +17,7 @@ const { branchId, serviceId, masterId } = useBooking()
 const defaultPhoto = `${import.meta.env.BASE_URL}images/doctor-img.png`
 const photoOf = (c) => (c.profile?.avatar ? fileUrl(c.profile.avatar) : defaultPhoto)
 
+const branch = ref(null)
 const doctors = ref([])
 const failed = ref(false)
 const selected = ref(null)
@@ -35,11 +36,28 @@ const providesService = (coworker) =>
 
 // Ранее выбранного врача возвращаем, только если он есть в текущем списке:
 // после смены услуги он мог из него выпасть.
-function fill(branch) {
-	doctors.value = (branch?.coworkers ?? []).filter(providesService)
+function fill(loaded) {
+	branch.value = loaded ?? null
+	doctors.value = (loaded?.coworkers ?? []).filter(providesService)
 	const keepSelected = doctors.value.some((d) => d.id === masterId.value)
 	selected.value = keepSelected ? masterId.value : (doctors.value[0]?.id ?? null)
 }
+
+// Ближайший свободный день врача и первые три часа в нём — расписание приходит
+// в филиале, отдельного запроса не нужно.
+const dateFormatter = new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long' })
+
+const slotsOf = computed(() => {
+	const byDoctor = new Map()
+	for (const doctor of doctors.value) {
+		const nearest = nearestSlots(branch.value, doctor.id)
+		byDoctor.set(doctor.id, {
+			date: nearest ? dateFormatter.format(new Date(`${nearest.date}T00:00`)) : '',
+			times: nearest?.times ?? [],
+		})
+	}
+	return byDoctor
+})
 
 // Врачи приходят вложенными в филиал — своего запроса у экрана нет.
 const cached = loadedBranch(branchId.value)
@@ -85,6 +103,8 @@ function submit() {
 				:surname="surnameOf(doctor)"
 				:name="nameOf(doctor)"
 				:specialty="positionOf(doctor)"
+				:date="slotsOf.get(doctor.id)?.date"
+				:times="slotsOf.get(doctor.id)?.times"
 				:photo="photoOf(doctor)"
 				:selected="selected === doctor.id"
 				@click="selected = doctor.id"

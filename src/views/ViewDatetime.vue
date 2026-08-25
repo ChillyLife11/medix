@@ -23,7 +23,7 @@ import BookingConfirm from '@/components/booking/BookingConfirm.vue'
 import { createAppointment } from '@/api/appointments'
 import { getBranch, loadedBranch, scheduleDates, shortAddress } from '@/api/branches'
 import { apiErrorMessage } from '@/api/http'
-import { useBooking } from '@/composables/useBooking'
+import { LEAD_MS, useBooking } from '@/composables/useBooking'
 
 const router = useRouter()
 const { branchId, serviceId, masterId, date, time, reset, appointmentPayload, isComplete } =
@@ -114,7 +114,7 @@ const visibleTimes = computed(() => {
 // Записаться можно не раньше чем через час: в 13:20 ближайший доступный час —
 // 15:00, а 14:00 уже нет. Прошедшие часы показываем, но выбрать их нельзя
 // (кнопки disabled). На другие дни ограничение не действует — там доступны все.
-const LEAD_MS = 60 * 60 * 1000
+// Сама константа — в useBooking: то же правило работает в карточке врача.
 
 // «Сейчас» подтягиваем раз в минуту — экран может быть открыт долго, и граница
 // доступного времени должна ехать вместе с часами.
