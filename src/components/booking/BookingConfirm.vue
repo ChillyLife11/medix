@@ -68,11 +68,11 @@ const emit = defineEmits(['confirm', 'cancel', 'edit'])
 				<p v-if="error" class="mt-4 text-13 text-center text-gray">{{ error }}</p>
 
 				<div class="mt-8 space-y-2.5">
-					<UiBtn color="secondary" soft fluid :disabled="saving" @click="emit('cancel')">
-						Отменить запись
-					</UiBtn>
 					<UiBtn fluid :disabled="saving" @click="emit('confirm')">
 						{{ saving ? 'Записываем…' : 'Подтвердить запись' }}
+					</UiBtn>
+					<UiBtn color="secondary" soft fluid :disabled="saving" @click="emit('cancel')">
+						Отменить запись
 					</UiBtn>
 				</div>
 			</DialogContent>
