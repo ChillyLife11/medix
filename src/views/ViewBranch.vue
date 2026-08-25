@@ -10,6 +10,7 @@ import {
 	getBranchesWithService,
 	loadedBranches,
 	loadedBranchesWithService,
+	shortAddress,
 } from '@/api/branches'
 import { useBooking } from '@/composables/useBooking'
 
@@ -49,19 +50,6 @@ onMounted(async () => {
 		loading.value = false
 	}
 })
-
-// Адрес приходит как «город Улан-Удэ, Павлова, 59А» — в макете только улица
-// и дом: «ул. Павлова, 59А».
-function shortAddress(branch) {
-	const parts = (branch.address ?? '')
-		.split(',')
-		.map((part) => part.trim())
-		.filter((part) => part && !/^(город|г\.?)\s/i.test(part))
-	if (!parts.length) return branch.title
-	const [street, ...rest] = parts
-	const named = /^(ул|улица|просп|пр-т|мкр|бул)/i.test(street) ? street : `ул. ${street}`
-	return [named, ...rest].join(', ')
-}
 
 // В сценарии «сначала услуга» она уже выбрана — сразу идём к врачам.
 function submit() {

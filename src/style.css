@@ -7,10 +7,9 @@
 	--color-brand: #01b27d;
 	--color-brand-foreground: #ffffff;
 
-	--color-secondary: #E2E2E2;
-	--color-secondary-soft: #F5F6F0;
+	--color-secondary: #e2e2e2;
+	--color-secondary-soft: #f5f6f0;
 	--color-secondary-foreground: #555559;
-
 
 	--color-page: #efefed;
 	--color-loading-page: #f0f0ee;
@@ -19,42 +18,44 @@
 
 	--color-gray: #555559;
 
-    --text-15: 15px;
-    --text-13: 13px;
-    
-    --shadow-accent: 0px 4px 4px rgba(0, 0, 0, 0.25), inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+	--text-15: 15px;
+	--text-13: 13px;
+
+	--shadow-accent: 0px 4px 4px rgba(0, 0, 0, 0.25), inset 0px 4px 4px rgba(0, 0, 0, 0.25);
 }
 
 @utility section-title {
-    color: var(--color-brand);
-    font-size: 22px;
-    margin-bottom: 30px;
+	color: var(--color-brand);
+	font-size: 22px;
+	margin-bottom: 30px;
 }
 
 @font-face {
-    font-family: 'Amstelvar';
-    src: url('./assets/fonts/Amstelvar-Roman.eot');
-    src: url('./assets/fonts/Amstelvar-Roman.eot?#iefix') format('embedded-opentype'),
-        url('./assets/fonts/Amstelvar-Roman.woff2') format('woff2'),
-        url('./assets/fonts/Amstelvar-Roman.woff') format('woff'),
-        url('./assets/fonts/Amstelvar-Roman.ttf') format('truetype'),
-        url('./assets/fonts/Amstelvar-Roman.svg#Amstelvar-Roman') format('svg');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+	font-family: 'Amstelvar';
+	src: url('./assets/fonts/Amstelvar-Roman.eot');
+	src:
+		url('./assets/fonts/Amstelvar-Roman.eot?#iefix') format('embedded-opentype'),
+		url('./assets/fonts/Amstelvar-Roman.woff2') format('woff2'),
+		url('./assets/fonts/Amstelvar-Roman.woff') format('woff'),
+		url('./assets/fonts/Amstelvar-Roman.ttf') format('truetype'),
+		url('./assets/fonts/Amstelvar-Roman.svg#Amstelvar-Roman') format('svg');
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
-    font-family: 'Open Sans';
-    src: url('./assets/fonts/OpenSans-Regular.eot');
-    src: url('./assets/fonts/OpenSans-Regular.eot?#iefix') format('embedded-opentype'),
-        url('./assets/fonts/OpenSans-Regular.woff2') format('woff2'),
-        url('./assets/fonts/OpenSans-Regular.woff') format('woff'),
-        url('./assets/fonts/OpenSans-Regular.ttf') format('truetype'),
-        url('./assets/fonts/OpenSans-Regular.svg#OpenSans-Regular') format('svg');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+	font-family: 'Open Sans';
+	src: url('./assets/fonts/OpenSans-Regular.eot');
+	src:
+		url('./assets/fonts/OpenSans-Regular.eot?#iefix') format('embedded-opentype'),
+		url('./assets/fonts/OpenSans-Regular.woff2') format('woff2'),
+		url('./assets/fonts/OpenSans-Regular.woff') format('woff'),
+		url('./assets/fonts/OpenSans-Regular.ttf') format('truetype'),
+		url('./assets/fonts/OpenSans-Regular.svg#OpenSans-Regular') format('svg');
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
 }
 
 body {
@@ -79,6 +80,28 @@ body {
 		transform: translateY(100%);
 	}
 }
+@keyframes dialog-in {
+	from {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes dialog-out {
+	from {
+		opacity: 1;
+		transform: scale(1);
+	}
+	to {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+}
+
 @keyframes overlay-in {
 	from {
 		opacity: 0;
@@ -101,7 +124,9 @@ body {
 .slide-left-leave-active,
 .slide-right-enter-active,
 .slide-right-leave-active {
-	transition: opacity 0.22s ease, transform 0.22s ease;
+	transition:
+		opacity 0.22s ease,
+		transform 0.22s ease;
 }
 
 .slide-left-enter-from {

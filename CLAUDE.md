@@ -73,6 +73,7 @@ src/
     doctor/DoctorCard.vue
     history/HistoryCard.vue  # карточка записи (услуга / врач / дата + иконка статуса)
     legal/LegalDialog.vue    # шторка «Правовая информация» (reka-ui Dialog)
+    booking/BookingConfirm.vue # сводка записи перед отправкой (reka-ui Dialog)
     debug/HttpToasts.vue     # ВРЕМЕННО: обмен с API поверх интерфейса (DEBUG_HTTP)
   assets/fonts/           # Amstelvar, Open Sans
 public/                   # favicon.svg + images/ (doctor-*, loading-*, logo.webp, icons.svg)
@@ -381,6 +382,14 @@ c `source: "max"`, `branch_id: 1`, датой `YYYY-MM-DD` и `start` из вы�
 
 ## Принятые решения и грабли (наш код)
 
+- **Запись создаётся из окна подтверждения**, а не по кнопке экрана: «Записаться»
+  на `/datetime` открывает `BookingConfirm` со сводкой (услуга, врач, дата и
+  время, филиал), и только «Подтвердить запись» зовёт `appointment/create`.
+  Иконка у строки ведёт на свой шаг (`/service`, `/doctors`, `/branch`); у даты
+  и времени шага нет — окно просто закрывается, этот экран и есть шаг.
+  «Отменить запись» — отказ от оформления целиком (`reset()` и на главную),
+  крестик закрывает окно и возвращает к правкам. Ошибку создания показываем там
+  же, в окне.
 - **Дни в календаре — из `branch.schedule`.** `scheduleDates(branch, masterId)`
   в `api/branches.js` отдаёт множество дат, где **выбранный врач** принимает в
   этом филиале; в `ViewDatetime` оно уходит в `:is-date-disabled` календаря, так

@@ -94,3 +94,16 @@ export function scheduleDates(branch, masterId = null) {
 		.map(([date]) => date)
 	return new Set(open)
 }
+
+// Адрес приходит как «город Улан-Удэ, Павлова, 59А» — в макете только улица
+// и дом: «ул. Павлова, 59А». Нужен и в списке филиалов, и в сводке записи.
+export function shortAddress(branch) {
+	const parts = (branch?.address ?? '')
+		.split(',')
+		.map((part) => part.trim())
+		.filter((part) => part && !/^(город|г\.?)\s/i.test(part))
+	if (!parts.length) return branch?.title ?? ''
+	const [street, ...rest] = parts
+	const named = /^(ул|улица|просп|пр-т|мкр|бул)/i.test(street) ? street : `ул. ${street}`
+	return [named, ...rest].join(', ')
+}

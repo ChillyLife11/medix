@@ -19,13 +19,15 @@ import {
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
+import BookingConfirm from '@/components/booking/BookingConfirm.vue'
 import { createAppointment } from '@/api/appointments'
-import { getBranch, loadedBranch, scheduleDates } from '@/api/branches'
+import { getBranch, loadedBranch, scheduleDates, shortAddress } from '@/api/branches'
 import { apiErrorMessage } from '@/api/http'
 import { useBooking } from '@/composables/useBooking'
 
 const router = useRouter()
-const { branchId, masterId, date, time, reset, appointmentPayload, isComplete } = useBooking()
+const { branchId, serviceId, masterId, date, time, reset, appointmentPayload, isComplete } =
+	useBooking()
 
 // Записаться можно только начиная с сегодняшнего дня.
 const minDate = today(getLocalTimeZone())
@@ -159,6 +161,71 @@ watch(availableTimes, (list) => {
 	if (!list.includes(selectedTime.value)) selectedTime.value = list[0] ?? null
 })
 
+// Сводка перед созданием записи: услуга, врач, дата со временем и филиал —
+// всё берём из уже загруженного филиала, дополнительных запросов не нужно.
+const confirming = ref(false)
+
+const chosenService = computed(() =>
+	(branch.value?.services ?? []).find((service) => service.id === serviceId.value),
+)
+const chosenDoctor = computed(() =>
+	(branch.value?.coworkers ?? []).find((coworker) => coworker.id === masterId.value),
+)
+
+// ФИО врача приходит перепутанным: фамилия в first_name, имя в last_name.
+const doctorName = computed(() => {
+	const profile = chosenDoctor.value?.profile
+	const full = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim()
+	return full || (chosenDoctor.value?.username ?? '')
+})
+
+const dateFormatter = new Intl.DateTimeFormat('ru', {
+	day: '2-digit',
+	month: '2-digit',
+	year: 'numeric',
+})
+
+// Строки сводки. step — роут шага, куда ведёт иконка; у даты и времени его нет,
+// этот шаг открыт прямо под окном.
+const summary = computed(() => [
+	{ label: 'Услуга', value: chosenService.value?.title ?? '', step: '/service' },
+	{ label: 'Врач', value: doctorName.value, step: '/doctors' },
+	{
+		label: 'Дата / время',
+		value: selectedDate.value
+			? `${dateFormatter.format(selectedDate.value.toDate(getLocalTimeZone()))} / ${selectedTime.value}`
+			: '',
+		step: null,
+	},
+	{ label: 'Филиал', value: branch.value ? shortAddress(branch.value) : '', step: '/branch' },
+])
+
+// Кнопка экрана больше не создаёт запись сразу: сначала показываем сводку, где
+// можно вернуться к любому шагу. Выбор фиксируем здесь же — сводка читает его
+// из общего состояния записи.
+function review() {
+	if (!selectedDate.value || !selectedTime.value) return
+	date.value = selectedDate.value.toString()
+	time.value = selectedTime.value
+	saveError.value = ''
+	confirming.value = true
+}
+
+// «Изменить» у строки: закрываем окно и уходим на нужный шаг. У даты и времени
+// шага нет — окно просто закрывается, экран под ним и есть этот шаг.
+function edit(step) {
+	confirming.value = false
+	if (step) router.push(step)
+}
+
+// «Отменить запись» — отказ от оформления целиком: выбор сбрасываем и уходим на
+// главную. Вернуться к правкам можно крестиком.
+function cancel() {
+	confirming.value = false
+	reset()
+	router.push('/profile')
+}
+
 const saving = ref(false)
 const saveError = ref('')
 
@@ -169,10 +236,6 @@ const success = ref(false)
 // Финал флоу: фиксируем выбор и создаём запись. При успехе состояние сбрасываем,
 // чтобы следующая запись начиналась с чистого листа.
 async function submit() {
-	if (!selectedDate.value || !selectedTime.value) return
-	date.value = selectedDate.value.toString()
-	time.value = selectedTime.value
-
 	if (!isComplete()) {
 		saveError.value = 'Не хватает данных для записи — пройдите шаги заново.'
 		return
@@ -183,6 +246,7 @@ async function submit() {
 	try {
 		await createAppointment(appointmentPayload())
 		reset()
+		confirming.value = false
 		success.value = true
 	} catch (e) {
 		console.warn('[datetime] appointment/create failed', e)
@@ -322,14 +386,24 @@ async function submit() {
 			</div>
 		</div>
 
-		<div class="sticky bottom-2.5 left-0 mt-auto space-y-2.5">
-			<div v-if="saveError" class="p-4 rounded-4xl bg-card text-13 text-center text-gray">
-				{{ saveError }}
-			</div>
-			<UiBtn :disabled="!selectedTime || saving" fluid @click="submit">
-				{{ saving ? 'Записываем…' : 'Записаться' }}
-			</UiBtn>
-		</div>
+		<UiBtn
+			:disabled="!selectedTime"
+			class="sticky bottom-2.5 left-0 mt-auto"
+			fluid
+			@click="review"
+		>
+			Записаться
+		</UiBtn>
+
+		<BookingConfirm
+			v-model:open="confirming"
+			:rows="summary"
+			:saving="saving"
+			:error="saveError"
+			@confirm="submit"
+			@cancel="cancel"
+			@edit="edit"
+		/>
 
 		<div v-if="success" class="fixed inset-0 z-50 flex items-center justify-center p-5">
 			<div
