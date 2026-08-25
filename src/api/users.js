@@ -1,4 +1,5 @@
 import { api } from '@/api/http'
+import { COMPANY_ID } from '@/config'
 
 // Поиск клиента по телефону — вход в приложение.
 // Возвращает клиента с access_token или null, если такого номера нет.
@@ -9,8 +10,17 @@ export function getUserByPhone(phone) {
 // Регистрация нового клиента по телефону. Авторизации не требует, в ответе
 // приходит клиент с access_token — как и у поиска по номеру.
 // source сейчас 'max': бэкенд ждёт его от мини-аппы мессенджера.
+//
+// company_id шлём, потому что клиника в базе не одна: поиск по номеру идёт
+// глобально, а вот заводить клиента без привязки к компании бэкенду, судя по
+// остальным методам (`appointment/create`, фильтр акций), нечем.
+// Ждёт ли он это поле именно в теле — у бэкенда не подтверждено.
 export function registerUser(phone, data = {}) {
 	return api
-		.post('/user/register-telegram', { phone, ...data }, { params: { source: 'max' } })
+		.post(
+			'/user/register-telegram',
+			{ phone, company_id: COMPANY_ID, ...data },
+			{ params: { source: 'max' } },
+		)
 		.then((r) => r.data)
 }
