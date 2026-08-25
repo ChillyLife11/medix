@@ -60,9 +60,11 @@ src/
   views/                  # экраны (см. таблицу соответствия)
   api/                    # http.js (axios+Bearer+apiErrorMessage), users, branches,
                           # coworkers, promos, appointments
-  composables/            # useAuth, useMessenger, useBooking, useAppointments
+  composables/            # useAuth, useMessenger, useBooking, useAppointments,
+                          # useHttpLog (журнал для отладочных тостов)
   session.js              # токен / client_id / телефон — только в памяти
-  config.js               # API_BASE, COMPANY_ID, MEDIA_BASE, TEST_PHONE, fileUrl
+  config.js               # API_BASE, COMPANY_ID, MEDIA_BASE, TEST_PHONE,
+                          # FALLBACK_PHONE, DEBUG_HTTP, fileUrl
   components/
     ui/UiBtn.vue          # базовая кнопка (варианты color/soft/outline/icon/fluid, to→RouterLink)
     ui/UiLoader.vue       # общий индикатор загрузки
@@ -71,6 +73,7 @@ src/
     doctor/DoctorCard.vue
     history/HistoryCard.vue  # карточка записи (услуга / врач / дата + иконка статуса)
     legal/LegalDialog.vue    # шторка «Правовая информация» (reka-ui Dialog)
+    debug/HttpToasts.vue     # ВРЕМЕННО: обмен с API поверх интерфейса (DEBUG_HTTP)
   assets/fonts/           # Amstelvar, Open Sans
 public/                   # favicon.svg + images/ (doctor-*, loading-*, logo.webp, icons.svg)
 index.html                # подключает https://st.max.ru/js/max-web-app.js (SDK MAX)
@@ -119,10 +122,31 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 > - `GET /promo/index`, `GET /promo/view`;
 > - `GET /appointment/index?filter[client_id]=&sort=-date`,
 >   `POST /appointment/create`, `POST /appointment/cancel?id=`;
-> - `GET /user/by-phone?phone=`, `POST /user/register-telegram?source=max`.
+> - `GET /user/by-phone?phone=` — номер **query-параметром**, без «+»
+>   (`79991234567`). На существующем номере отдаёт клиента с `access_token`
+>   (проверено вживую), на неизвестном — пусто;
+> - `POST /user/register-telegram?source=max` — тело JSON, см. ниже.
 >
 > Новый контракт — цель на будущее, но не переписывать вслепую: сверяться с тем,
 > что реально отвечает сервер (без токена всё отдаёт **401**).
+>
+> ⛔ **Регистрация нового клиента сейчас не проходит** — после «Поделиться»
+> номером в MAX экран показывает «Не удалось войти». `by-phone` при этом
+> отрабатывает штатно (для нового номера пусто), спотыкается именно
+> `register-telegram`. Что известно:
+>
+> Мы шлём `{ phone, company_id, id, first_name, last_name, username, avatar }`.
+> `company_id` добавлен **как гипотеза**, у бэкенда не подтверждён.
+>
+> React-оригинал (работал с этим же бэкендом) слал другое — `hooks/MessengerContext.tsx`:
+> `{ id, username, first_name, last_name, phone, avatar, privacy_accepted,
+> policy_accepted }`. Отличия от нашего тела: у него **есть флаги согласий**
+> (мы их выпилили в 0.1.13 как «нигде не читаются») и **нет `company_id`**.
+> Похоже, приводить тело надо к оригиналу, а не выдумывать поля.
+>
+> `id` в этом теле — **идентификатор аккаунта MAX** (`initDataUnsafe.user.id`),
+> а не id клиента в базе: по нему бэкенд связывает карточку с мессенджером и по
+> нему же потом работает `check-chat-id`.
 >
 > **Статусы записи:** `0` лист ожидания, `1` отправлен в МИС, `2` напоминание
 > отправлено, `4` подтверждено, `5` выполнено, `6` отменено. Поле называется
@@ -391,6 +415,20 @@ c `source: "max"`, `branch_id: 1`, датой `YYYY-MM-DD` и `start` из вы�
   а после загрузки данных зовём `emblaApi.reInit()`. Иначе стрелки мёртвые.
 - **Слайдер не зациклен**: на краях гасим стрелку по `canScrollPrev/Next`
   (события `select` и `reInit`).
+- **Отладочные тосты по API — временные.** `DEBUG_HTTP` в `config.js`,
+  `useHttpLog` + `components/debug/HttpToasts.vue`, перехватчики в `api/http.js`
+  отдельной парой (чтобы не мешать обработке 401). Показывают тело запроса и
+  ответ поверх интерфейса: внутри MAX нет консоли, иначе обмен не увидеть.
+  **Флаг включён и в прод-сборке намеренно** — отлаживаем именно её. Перед
+  релизом выключить (или удалить `components/debug` вместе с `useHttpLog`).
+  `access_token` в выводе маскируется: остаются первые 6 символов и длина.
+- **`VITE_COMPANY_ID` в деплой не передаётся** — workflow задаёт только
+  `VITE_BASE` и `VITE_API_BASE`, поэтому на Pages всегда `company_id = 1`. Если
+  у клиники другой идентификатор, переменную надо добавить в
+  `.github/workflows/deploy.yml`.
+- **Горизонтальный скролл на экране согласий** (~24px): `*:w-full` в `App.vue`
+  плюс `px-6` у корня `ViewAgree`. К отладочным тостам отношения не имеет —
+  воспроизводится и без них.
 - **Prettier.** Часть старых `.vue` ещё не отформатирована (точки с запятой,
   4 пробела). Форматируем **только те файлы, которые правим** — `pnpm format`
   на весь репозиторий создаёт шум в диффе. Для точечного прогона:
