@@ -59,7 +59,7 @@ src/
   style.css               # tailwind @theme, шрифты, анимации
   views/                  # экраны (см. таблицу соответствия)
   api/                    # http.js (axios+Bearer+apiErrorMessage), users, branches,
-                          # coworkers, promos, appointments
+                          # coworkers, promos, appointments, feedback
   composables/            # useAuth, useMessenger, useBooking, useAppointments,
                           # useHttpLog (журнал для отладочных тостов)
   session.js              # токен / client_id / телефон — только в памяти
@@ -73,6 +73,7 @@ src/
     doctor/DoctorCard.vue
     history/HistoryCard.vue  # карточка записи (услуга / врач / дата + иконка статуса)
     legal/LegalDialog.vue    # шторка «Правовая информация» (reka-ui Dialog)
+    feedback/FeedbackDialog.vue # шторка «Обратная связь»: текст + поле + отправка
     auth/AgreeDialog.vue     # согласия ПДн + запрос номера, окно поверх сплэша
     booking/BookingConfirm.vue # сводка записи перед отправкой (reka-ui Dialog)
     debug/HttpToasts.vue     # ВРЕМЕННО: обмен с API поверх интерфейса (DEBUG_HTTP)
@@ -124,6 +125,11 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 >   функция в `api/coworkers.js` осталась, но **сейчас не вызывается** (см. сетку
 >   времени в «решениях»);
 > - `GET /promo/index`, `GET /promo/view`;
+> - `POST /feedback/create` — **гипотеза**, не подтверждена: эндпоинта под
+>   обратную связь нет ни в документации, ни в React-оригинале. Путь и тело
+>   (`company_id`, `client_id`, `text`, `source`) взяты по образцу
+>   `appointment/create`; пока бэкенд не подтвердит, окно обратной связи будет
+>   показывать ошибку отправки. Единственное место — `src/api/feedback.js`;
 > - `GET /appointment/index?filter[client_id]=&sort=-date`,
 >   `POST /appointment/create`, `POST /appointment/cancel?id=`;
 > - `GET /user/by-phone?phone=` — номер **query-параметром**, без «+»

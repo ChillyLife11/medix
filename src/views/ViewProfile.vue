@@ -5,6 +5,7 @@ import emblaCarouselVue from 'embla-carousel-vue'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
 import LegalDialog from '@/components/legal/LegalDialog.vue'
+import FeedbackDialog from '@/components/feedback/FeedbackDialog.vue'
 import UiTabbar from '@/components/ui/UiTabbar.vue'
 import {
 	useAppointments,
@@ -250,7 +251,7 @@ onMounted(async () => {
 
 		<div class="flex flex-col items-center px-2.5 space-y-2.5">
 			<LegalDialog />
-			<div class="text-xl underline text-brand">Обратная связь</div>
+			<FeedbackDialog />
 		</div>
 
 		<UiTabbar />
