@@ -1,17 +1,23 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import AgreeDialog from '@/components/auth/AgreeDialog.vue'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
 const base = import.meta.env.BASE_URL
 const { checkAuth } = useAuth()
 
+// Согласия показываем окном поверх сплэша, а не отдельной страницей: экран
+// загрузки остаётся фоном, пока клиент не опознан.
+const agreeing = ref(false)
+
 onMounted(async () => {
 	// Есть сохранённая сессия или телефон — сразу в профиль,
 	// иначе просим согласия и номер телефона.
 	const state = await checkAuth()
-	router.replace(state === 'authed' ? '/profile' : '/agree')
+	if (state === 'authed') router.replace('/profile')
+	else agreeing.value = true
 })
 </script>
 
@@ -21,6 +27,8 @@ onMounted(async () => {
 		<p class="max-w-96 text-center text-xl leading-[1.2] text-[#787878]">
 			СТОМАТОЛОГИЧЕСКАЯ КЛИНИКА ДОКТОРА ДАБАЕВА
 		</p>
+
+		<AgreeDialog v-model:open="agreeing" @signed="router.replace('/profile')" />
 	</div>
 </template>
 

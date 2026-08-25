@@ -23,7 +23,7 @@ api.interceptors.response.use(
 	(error) => {
 		if (error?.response?.status === 401 && token.value) {
 			clearSession()
-			router.replace('/agree')
+			router.replace('/')
 		}
 		return Promise.reject(error)
 	},

@@ -73,6 +73,7 @@ src/
     doctor/DoctorCard.vue
     history/HistoryCard.vue  # карточка записи (услуга / врач / дата + иконка статуса)
     legal/LegalDialog.vue    # шторка «Правовая информация» (reka-ui Dialog)
+    auth/AgreeDialog.vue     # согласия ПДн + запрос номера, окно поверх сплэша
     booking/BookingConfirm.vue # сводка записи перед отправкой (reka-ui Dialog)
     debug/HttpToasts.vue     # ВРЕМЕННО: обмен с API поверх интерфейса (DEBUG_HTTP)
   assets/fonts/           # Amstelvar, Open Sans
@@ -83,8 +84,8 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 ### Текущий статус
 **Готово:**
 - **вход по телефону** (слоя мессенджера сейчас нет): сплэш `ViewHome` (`/`) зовёт
-  `checkAuth()` и разводит на `/profile` или `/agree`; `ViewAgree` — согласия и
-  `signIn()`. Номер берётся из `TEST_PHONE`, сессия живёт в памяти (`src/session.js`);
+  `checkAuth()` и либо уводит на `/profile`, либо открывает поверх себя окно
+  `AgreeDialog` — согласия и `signIn()`. Номер берётся из `TEST_PHONE`, сессия живёт в памяти (`src/session.js`);
 - **API-слой**: `src/config.js`, `src/api/http.js` (axios + Bearer +
   `apiErrorMessage` + разлогин на 401), `users`, `branches`, `coworkers`,
   `promos`, `appointments`. Dev-прокси `/api` на бэкенд в `vite.config.js`;
@@ -187,10 +188,12 @@ requestPhone() }`. Глобал `window.WebApp` читаем **один раз �
 `POST /user/register-telegram?source=max`. В обоих случаях в ответе
 `access_token` → `setSession()` в `src/session.js`.
 
-**Где спрашиваем номер.** Только на `ViewAgree` по кнопке «Отправить»: MAX отдаёт
-контакт лишь по действию пользователя. Поэтому `checkAuth()` в MAX **не** входит
-сам, а сразу ведёт на согласия — иначе сплэш молча логинил бы клиента и экран с
-запросом номера не показался бы никогда.
+**Где спрашиваем номер.** Только в `AgreeDialog` по кнопке «Отправить»: MAX
+отдаёт контакт лишь по действию пользователя. Поэтому `checkAuth()` в MAX **не**
+входит сам, а открывает окно согласий — иначе сплэш молча логинил бы клиента и
+запрос номера не показался бы никогда. Своего роута у согласий нет: это окно
+поверх сплэша, закрыть его нельзя (ни крестика, ни Esc, ни клика мимо), а на 401
+`api/http.js` возвращает на `/` — сплэш сам решит, что показать.
 
 **Тестовый номер — только в dev.** `FALLBACK_PHONE` в `config.js` равен
 `TEST_PHONE` при `import.meta.env.DEV` и `null` в прод-сборке (номер физически
@@ -241,7 +244,7 @@ MAX однажды отдаст неизвестный `platform`, `isMax` ст�
 Ещё workflow копирует `index.html` в `404.html`: Pages для неизвестного пути
 отдаёт `404.html`, и без этого прямой заход на `/profile` ломался бы.
 
-Роуты сейчас **плоские**: `/`, `/agree`, `/profile`, `/sale`, `/active`,
+Роуты сейчас **плоские**: `/`, `/profile`, `/sale`, `/active`,
 `/branch`, `/service`, `/category`, `/doctors`, `/datetime` — в оригинале это был
 единый экран `create` с модалкой и панелями. Мы разбили flow на отдельные экраны —
 это осознанно, наш UX.
@@ -250,7 +253,7 @@ MAX однажды отдаст неизвестный `platform`, `isMax` ст�
 | Наш роут / View            | Оригинал (React)                    | Назначение                         |
 |----------------------------|-------------------------------------|------------------------------------|
 | `ViewHome` `/`             | `pages/welcome`                     | сплэш/загрузка                     |
-| `ViewAgree` `/agree`       | `pages/welcome` (Popup+Checkbox)    | согласия ПДн перед регистрацией    |
+| `AgreeDialog` (в `ViewHome`) | `pages/welcome` (Popup+Checkbox)  | согласия ПДн перед регистрацией — окно поверх сплэша, без своего роута |
 | `ViewProfile` `/profile`   | `pages/home/route` + `VisitCard`    | **главный экран**: слайдер записей, плитки, правовая информация, таббар |
 | `ViewActive` `/active`     | `pages/history` + `VisitCard`       | история: выполненные и отменённые  |
 | `ViewSale` `/sale`         | `pages/home/promo`                  | акции                              |
@@ -447,9 +450,9 @@ c `source: "max"`, `branch_id: 1`, датой `YYYY-MM-DD` и `start` из вы�
   `VITE_BASE` и `VITE_API_BASE`, поэтому на Pages всегда `company_id = 1`. Если
   у клиники другой идентификатор, переменную надо добавить в
   `.github/workflows/deploy.yml`.
-- **Горизонтальный скролл на экране согласий** (~24px): `*:w-full` в `App.vue`
-  плюс `px-6` у корня `ViewAgree`. К отладочным тостам отношения не имеет —
-  воспроизводится и без них.
+- **Горизонтальный скролл на согласиях** (~24px) был из-за `*:w-full` в
+  `App.vue` плюс `px-6` у корня `ViewAgree`. Ушёл сам, когда согласия стали
+  окном: `DialogPortal` выносит их из этой обёртки.
 - **Prettier.** Часть старых `.vue` ещё не отформатирована (точки с запятой,
   4 пробела). Форматируем **только те файлы, которые правим** — `pnpm format`
   на весь репозиторий создаёт шум в диффе. Для точечного прогона:

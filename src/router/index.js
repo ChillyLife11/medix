@@ -7,11 +7,6 @@ const routes = [
 		component: () => import('@/views/ViewHome.vue'),
 	},
 	{
-		path: '/agree',
-		name: 'agree',
-		component: () => import('@/views/ViewAgree.vue'),
-	},
-	{
 		path: '/profile',
 		name: 'profile',
 		component: () => import('@/views/ViewProfile.vue'),
