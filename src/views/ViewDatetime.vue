@@ -18,19 +18,64 @@ import {
 } from 'reka-ui'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
+import UiLoader from '@/components/ui/UiLoader.vue'
 import { createAppointment } from '@/api/appointments'
+import { getBranch, loadedBranch, scheduleDates } from '@/api/branches'
 import { apiErrorMessage } from '@/api/http'
 import { useBooking } from '@/composables/useBooking'
 
 const router = useRouter()
-const { date, time, reset, appointmentPayload, isComplete } = useBooking()
+const { branchId, masterId, date, time, reset, appointmentPayload, isComplete } = useBooking()
 
 // Записаться можно только начиная с сегодняшнего дня.
 const minDate = today(getLocalTimeZone())
-// При возврате на экран показываем ранее выбранный день, а не сегодняшний.
-// Сами слоты не кешируем — их могли занять, пока пользователь ходил по шагам.
-const savedDate = date.value ? parseDate(date.value) : null
-const selectedDate = ref(savedDate && savedDate.compare(minDate) >= 0 ? savedDate : minDate)
+
+// Филиал нужен ради расписания. Обычно он уже загружен шагом выбора филиала, но
+// «Повторить» из истории ведёт сразу сюда — тогда запрашиваем сами.
+const branch = ref(loadedBranch(branchId.value))
+const loading = ref(!branch.value)
+const failed = ref(false)
+
+onMounted(async () => {
+	if (!loading.value) return
+	try {
+		branch.value = await getBranch(branchId.value)
+	} catch (e) {
+		console.warn('[datetime] branch/index failed', e)
+		failed.value = true
+	} finally {
+		loading.value = false
+	}
+})
+
+// Дни, когда выбранный врач принимает в этом филиале. Расписание приходит в
+// филиале и покрывает только ближайшую неделю — дни за её пределами закрыты
+// так же, как прошедшие: их видно, но выбрать нельзя.
+const openDates = computed(() => scheduleDates(branch.value, masterId.value))
+const isDateClosed = (dateValue) => !openDates.value.has(dateValue.toString())
+
+// Первый рабочий день — с него открываем экран: сегодня врач может не принимать.
+function firstOpenDate() {
+	const [first] = [...openDates.value].sort()
+	return first ? parseDate(first) : null
+}
+
+// Дня может не быть вовсе (у врача нет расписания) — тогда null, и время не
+// выбирается.
+const selectedDate = ref(null)
+// Месяц в шапке календаря: без него экран открылся бы на текущем месяце, даже
+// когда ближайший рабочий день уже в следующем.
+const placeholder = ref(minDate)
+
+// Ранее выбранный день возвращаем, только если он всё ещё открыт по расписанию.
+function pickDate() {
+	const saved = date.value ? parseDate(date.value) : null
+	const keep = saved && saved.compare(minDate) >= 0 && !isDateClosed(saved)
+	selectedDate.value = keep ? saved : firstOpenDate()
+	if (selectedDate.value) placeholder.value = selectedDate.value
+}
+
+watch(openDates, pickDate, { immediate: true })
 
 const monthFormatter = new Intl.DateTimeFormat('ru', { month: 'long' })
 const monthLabel = (dateValue) =>
@@ -90,6 +135,7 @@ function slotAt(dateValue, slot) {
 }
 
 function isTooSoon(slot) {
+	if (!selectedDate.value) return true
 	return slotAt(selectedDate.value, slot) - now.value < LEAD_MS
 }
 
@@ -123,6 +169,7 @@ const success = ref(false)
 // Финал флоу: фиксируем выбор и создаём запись. При успехе состояние сбрасываем,
 // чтобы следующая запись начиналась с чистого листа.
 async function submit() {
+	if (!selectedDate.value || !selectedTime.value) return
 	date.value = selectedDate.value.toString()
 	time.value = selectedTime.value
 
@@ -150,12 +197,20 @@ async function submit() {
 	<div class="min-h-screen flex flex-col p-2.5">
 		<UiPageTitle>Выбрать дату и время</UiPageTitle>
 
-		<div class="space-y-4">
+		<UiLoader v-if="loading" label="Загружаем расписание" />
+
+		<div v-else-if="failed" class="p-5 rounded-4xl bg-card text-15 text-gray">
+			Не удалось загрузить расписание. Попробуйте позже.
+		</div>
+
+		<div v-else class="space-y-4">
 			<div class="p-5 rounded-[30px] bg-card">
 				<CalendarRoot
 					v-slot="{ weekDays, grid }"
 					v-model="selectedDate"
+					v-model:placeholder="placeholder"
 					:min-value="minDate"
+					:is-date-disabled="isDateClosed"
 					:week-starts-on="1"
 					weekday-format="short"
 					locale="ru"
@@ -220,7 +275,12 @@ async function submit() {
 				</CalendarRoot>
 			</div>
 
-			<div class="p-5 rounded-[30px] bg-card space-y-2.5">
+			<div v-if="!openDates.size" class="p-5 rounded-4xl bg-card text-15 text-gray">
+				На ближайшие дни у выбранного врача нет расписания — вернитесь назад и выберите
+				другого.
+			</div>
+
+			<div v-else class="p-5 rounded-[30px] bg-card space-y-2.5">
 				<div class="grid grid-cols-2 gap-2.5">
 					<button
 						v-for="period in periods"

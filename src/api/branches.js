@@ -78,3 +78,19 @@ export async function getBranchesWithService(serviceId) {
 export function loadedBranchesWithService(serviceId) {
 	return branches ? withService(branches, serviceId) : null
 }
+
+// Расписание филиала: { "YYYY-MM-DD": { "<id врача>": ["09:00", …] } }.
+// Бэкенд отдаёт только ближайшие дни (около недели) и только рабочие — значит
+// дни, которых в расписании нет, для записи закрыты.
+// Врача учитываем: в один и тот же день в филиале принимают не все.
+export function scheduleDates(branch, masterId = null) {
+	const schedule = branch?.schedule ?? {}
+	const open = Object.entries(schedule)
+		.filter(([, byMaster]) =>
+			masterId === null
+				? Object.values(byMaster ?? {}).some((slots) => slots?.length)
+				: (byMaster?.[masterId] ?? []).length > 0,
+		)
+		.map(([date]) => date)
+	return new Set(open)
+}
