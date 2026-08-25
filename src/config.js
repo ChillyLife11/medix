@@ -15,6 +15,11 @@ export const TEST_PHONE = '71111111113'
 // аккаунт — с чужими записями и без единой ошибки на экране.
 export const FALLBACK_PHONE = import.meta.env.DEV ? TEST_PHONE : null
 
+// ВРЕМЕННО, на время отладки. Показывает поверх интерфейса тело каждого запроса
+// и ответ бэкенда: внутри MAX нет консоли, иначе обмен не увидеть. Включено и в
+// прод-сборке намеренно — тестируем мы именно её. Выключить перед релизом.
+export const DEBUG_HTTP = true
+
 // Картинки приходят путями вида /uploads/... — их нужно префиксовать хостом бэка
 // (прокси в dev настроен только на /api).
 export const MEDIA_BASE = import.meta.env.VITE_API_HOST ?? 'https://dental-web.pro'
