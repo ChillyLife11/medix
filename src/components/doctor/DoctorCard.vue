@@ -21,7 +21,7 @@ defineProps({
 		:class="selected ? 'shadow-accent' : 'shadow-[0px_4px_4px_rgba(0,0,0,0.12)]'"
 		class="relative w-full min-h-37 overflow-hidden rounded-[30px] bg-card-darker text-left duration-75 active:scale-[0.98]"
 	>
-		<div class="relative z-10 py-5 pl-6 pr-27 space-y-0.5 text-gray">
+		<div class="relative z-10 py-5 pl-6 pr-32 space-y-0.5 text-gray">
 			<div class="text-15 font-semibold leading-tight">{{ surname }}</div>
 			<div v-if="name" class="text-13 leading-tight">{{ name }}</div>
 			<div v-if="specialty" class="pt-1.5 text-13 opacity-70">{{ specialty }}</div>
@@ -32,16 +32,19 @@ defineProps({
 				<span
 					v-for="time in times"
 					:key="time"
-					class="flex items-center justify-center min-h-8 py-1 px-3 rounded-full border border-brand text-13 text-brand"
+					class="flex items-center justify-center min-h-8 py-1 px-2.5 rounded-full border border-brand text-13 text-brand"
 				>
 					{{ time }}
 				</span>
 			</div>
 		</div>
+		<!-- Фото с бэкенда квадратные, поэтому object-cover: врач занимает всю
+		     высоту карточки, лишний фон по бокам обрезается. Ширина фиксированная,
+		     иначе снимок растёт вместе с карточкой. -->
 		<img
 			:src="photo"
 			alt=""
-			class="absolute bottom-0 right-0 w-25 h-full object-contain object-right-bottom pointer-events-none"
+			class="absolute bottom-0 right-0 w-30 h-full object-cover object-bottom pointer-events-none"
 		/>
 	</button>
 </template>
