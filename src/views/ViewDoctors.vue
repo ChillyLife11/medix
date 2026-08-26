@@ -96,7 +96,7 @@ function submit() {
 			По выбранной услуге врачей нет — попробуйте выбрать другую.
 		</div>
 
-		<div v-else class="space-y-4">
+		<div v-else class="space-y-4 pb-5">
 			<DoctorCard
 				v-for="doctor in doctors"
 				:key="doctor.id"

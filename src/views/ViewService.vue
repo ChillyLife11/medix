@@ -64,7 +64,7 @@ function submit() {
 			<template v-else>В этом филиале услуг нет — выберите другой филиал.</template>
 		</div>
 
-		<RadioGroupRoot v-else v-model="selected" class="space-y-2.5">
+		<RadioGroupRoot v-else v-model="selected" class="space-y-2.5 pb-5">
 			<RadioGroupItem
 				v-for="service in services"
 				:key="service.id"

@@ -265,7 +265,7 @@ async function submit() {
 			Не удалось загрузить расписание. Попробуйте позже.
 		</div>
 
-		<div v-else class="space-y-4">
+		<div v-else class="space-y-4 pb-5">
 			<div class="p-5 rounded-[30px] bg-card">
 				<CalendarRoot
 					v-slot="{ weekDays, grid }"

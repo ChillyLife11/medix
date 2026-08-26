@@ -14,7 +14,7 @@ const selected = ref('adult')
 	<div class="min-h-screen flex flex-col p-2.5">
 		<h1 class="text-[22px] leading-[0.9] text-brand mb-7">Выбрать категорию</h1>
 
-		<div class="grid grid-cols-2 gap-2.5">
+		<div class="grid grid-cols-2 gap-2.5 pb-5">
 			<button
 				v-for="category in categories"
 				:key="category.key"
