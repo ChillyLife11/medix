@@ -188,7 +188,7 @@ const sections = [
 					</section>
 				</div>
 
-				<div class="shrink-0 p-2.5 bg-card">
+				<div class="shrink-0 p-2.5 pb-7.5 bg-card">
 					<DialogClose as-child>
 						<UiBtn fluid>Понятно</UiBtn>
 					</DialogClose>

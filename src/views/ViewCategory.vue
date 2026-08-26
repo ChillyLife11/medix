@@ -1,13 +1,13 @@
 <script setup>
-import { ref } from 'vue';
-import UiBtn from '@/components/ui/UiBtn.vue';
+import { ref } from 'vue'
+import UiBtn from '@/components/ui/UiBtn.vue'
 
 const categories = [
 	{ key: 'adult', label: 'Взрослая стоматология' },
 	{ key: 'child', label: 'Детская стоматология' },
-];
+]
 
-const selected = ref('adult');
+const selected = ref('adult')
 </script>
 
 <template>
@@ -27,6 +27,6 @@ const selected = ref('adult');
 			</button>
 		</div>
 
-		<UiBtn class="sticky bottom-2.5 left-0 mt-auto" fluid>Выбрать категорию</UiBtn>
+		<UiBtn class="sticky bottom-7.5 left-0 mt-auto" fluid>Выбрать категорию</UiBtn>
 	</div>
 </template>

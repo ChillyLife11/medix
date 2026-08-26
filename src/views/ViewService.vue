@@ -75,7 +75,7 @@ function submit() {
 			</RadioGroupItem>
 		</RadioGroupRoot>
 
-		<UiBtn :disabled="!selected" class="sticky bottom-2.5 left-0 mt-auto" fluid @click="submit">
+		<UiBtn :disabled="!selected" class="sticky bottom-7.5 left-0 mt-auto" fluid @click="submit">
 			Выбрать услугу
 		</UiBtn>
 	</div>

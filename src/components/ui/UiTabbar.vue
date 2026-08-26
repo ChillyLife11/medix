@@ -22,7 +22,7 @@ const linkTo = (path) => (route.path === path ? undefined : path)
 	<!-- sticky, а не fixed: плашка остаётся в потоке, поэтому контент под ней
 	     не прячется и нижний отступ страницы не нужно подгонять руками.
 	     mt-auto прижимает её к низу, когда контента меньше экрана. -->
-	<div class="sticky bottom-2.5 z-10 mt-auto mb-2.5 px-2.5">
+	<div class="sticky bottom-7.5 z-10 mt-auto mb-7.5 px-2.5">
 		<div class="flex items-center justify-between p-4 rounded-full shadow-accent bg-card">
 			<UiBtn :to="linkTo('/profile')" color="secondary" soft icon>
 				<House stroke-width="1.1" size="26" />

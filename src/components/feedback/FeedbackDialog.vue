@@ -99,7 +99,7 @@ async function submit() {
 					</template>
 				</div>
 
-				<div class="shrink-0 p-2.5 bg-card">
+				<div class="shrink-0 p-2.5 pb-7.5 bg-card">
 					<DialogClose v-if="sent" as-child>
 						<UiBtn fluid>Закрыть</UiBtn>
 					</DialogClose>

@@ -59,7 +59,7 @@ onMounted(async () => {
 			</div>
 		</div>
 
-		<UiBtn class="sticky bottom-2.5 left-0 mt-auto" fluid>Участвовать в акции</UiBtn>
+		<UiBtn class="sticky bottom-7.5 left-0 mt-auto" fluid>Участвовать в акции</UiBtn>
 	</div>
 </template>
 
