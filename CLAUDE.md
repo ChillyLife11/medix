@@ -458,7 +458,11 @@ c `source: "max"`, `branch_id: 1`, датой `YYYY-MM-DD` и `start` из вы�
   статуса — часы.
 - **ФИО врача перепутаны местами** в ответе бэка: фамилия лежит в
   `profile.first_name`, имя — в `profile.last_name`. В `ViewDoctors` это учтено,
-  не «чинить» переименованием.
+  не «чинить» переименованием. В записи (`/appointment/index`) врач приходит так
+  же — `master.profile.{first_name,last_name}`, плюс там же его `avatar`;
+  в корне `master` только `id`, `username` (служебный логин вида
+  «dugarov-baan-16») и `services`. `doctorName()` в `useAppointments` читает
+  именно `profile`.
 - **Embla инициализируется один раз в `onMounted`** и только если контейнер уже
   в DOM. Поэтому слайдер на `/profile` держим в DOM всегда (`v-show`, не `v-if`),
   а после загрузки данных зовём `emblaApi.reInit()`. Иначе стрелки мёртвые.

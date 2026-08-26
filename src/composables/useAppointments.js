@@ -17,10 +17,19 @@ export function serviceTitle(appointment) {
 
 // Врач приходит вложенным объектом; если его в ответе нет — вернём пустую строку,
 // вызывающий код такую строку прячет.
+//
+// ФИО лежит в `master.profile`, причём поля перепутаны местами: фамилия в
+// `first_name`, имя в `last_name` — как и у сотрудников филиала (см. ViewDoctors).
+// Поэтому «Дугаров Баян» собирается именно в таком порядке. Плоские поля
+// оставлены как запасной вариант, `username` — последний (там служебный логин
+// вида «dugarov-baan-16»).
 export function doctorName(appointment) {
 	const master = appointment.master ?? appointment.user ?? appointment.coworker
 	if (!master) return ''
-	const name = [master.last_name, master.first_name, master.middle_name].filter(Boolean).join(' ')
+	const profile = master.profile
+	const name = profile
+		? [profile.first_name, profile.last_name, profile.middle_name].filter(Boolean).join(' ')
+		: [master.last_name, master.first_name, master.middle_name].filter(Boolean).join(' ')
 	return name || master.username || ''
 }
 
