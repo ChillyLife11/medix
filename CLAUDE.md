@@ -126,10 +126,10 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 >   функция в `api/coworkers.js` осталась, но **сейчас не вызывается** (см. сетку
 >   времени в «решениях»);
 > - `GET /promo/index`, `GET /promo/view`;
-> - `POST /review/create` — отзыв из окна обратной связи. Тело —
->   **multipart/form-data** (не JSON, как у остальных методов): `user_id` (id
->   клиента), `company_id`, `text`. Путь подтверждён бэкендом; маршрут отвечает
->   405 на GET, то есть существует и без токена. Единственное место —
+> - `POST /review/create` — отзыв из окна обратной связи: `user_id` (id
+>   клиента), `company_id`, `text`. В описании метода тело — multipart/form-data,
+>   но шлём **JSON**, как и остальные методы (решение заказчика). Маршрут
+>   отвечает 405 на GET, то есть существует и без токена. Единственное место —
 >   `src/api/feedback.js`;
 > - `GET /appointment/index?filter[client_id]=&sort=-date`,
 >   `POST /appointment/create`, `POST /appointment/cancel?id=`;

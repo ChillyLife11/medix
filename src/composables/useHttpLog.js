@@ -25,9 +25,6 @@ export function preview(value, limit = 700) {
 	let text
 	if (typeof value === 'string') {
 		text = value
-	} else if (typeof FormData !== 'undefined' && value instanceof FormData) {
-		// JSON.stringify(FormData) даёт «{}» — перечисляем поля руками.
-		text = [...value.entries()].map(([key, item]) => `${key}: ${item}`).join('\n')
 	} else {
 		try {
 			text = JSON.stringify(value, null, 1)
