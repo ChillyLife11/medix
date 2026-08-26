@@ -132,7 +132,7 @@ onMounted(async () => {
 				<button
 					type="button"
 					:disabled="!canScrollPrev"
-					class="shrink-0 p-2 -mx-1.5 text-brand duration-75 active:scale-90 disabled:opacity-30 disabled:pointer-events-none"
+					class="shrink-0 p-2 -mx-1.5 text-brand duration-60 active:scale-[0.92] disabled:opacity-30 disabled:pointer-events-none"
 					aria-label="Предыдущая запись"
 					@click="scrollPrev"
 				>
@@ -201,7 +201,7 @@ onMounted(async () => {
 				<button
 					type="button"
 					:disabled="!canScrollNext"
-					class="shrink-0 p-2 -mx-1.5 text-brand duration-75 active:scale-90 disabled:opacity-30 disabled:pointer-events-none"
+					class="shrink-0 p-2 -mx-1.5 text-brand duration-60 active:scale-[0.92] disabled:opacity-30 disabled:pointer-events-none"
 					aria-label="Следующая запись"
 					@click="scrollNext"
 				>
@@ -237,7 +237,7 @@ onMounted(async () => {
 			<!-- Второй сценарий записи: сначала услуга, филиал уже под неё -->
 			<button
 				type="button"
-				class="block w-full p-5 rounded-full bg-card shadow-accent duration-75 active:scale-[0.98]"
+				class="block w-full p-5 rounded-full bg-card shadow-accent duration-60 active:scale-[0.984]"
 				@click="startFromService"
 			>
 				<div class="text-center text-xl text-brand">Услуги</div>

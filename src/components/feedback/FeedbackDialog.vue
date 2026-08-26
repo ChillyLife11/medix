@@ -53,7 +53,7 @@ async function submit() {
 
 <template>
 	<DialogRoot :open="open" @update:open="onToggle">
-		<DialogTrigger class="text-xl underline text-brand duration-75 active:scale-95">
+		<DialogTrigger class="text-xl underline text-brand duration-60 active:scale-[0.96]">
 			Обратная связь
 		</DialogTrigger>
 
@@ -68,7 +68,7 @@ async function submit() {
 				<div class="shrink-0 flex items-center gap-2.5 p-5 rounded-t-4xl bg-card">
 					<DialogTitle class="grow text-xl text-brand">Обратная связь</DialogTitle>
 					<DialogClose
-						class="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-card-darker text-gray duration-75 active:scale-90"
+						class="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-card-darker text-gray duration-60 active:scale-[0.92]"
 						aria-label="Закрыть"
 					>
 						<X :size="20" :stroke-width="1.5" />

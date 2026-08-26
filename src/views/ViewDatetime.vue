@@ -280,7 +280,7 @@ async function submit() {
 				>
 					<CalendarHeader class="grid grid-cols-3 justify-between mb-2 px-1">
 						<CalendarPrev
-							class="text-lg text-left text-gray/50 capitalize hover:text-gray duration-75"
+							class="text-lg text-left text-gray/50 capitalize hover:text-gray duration-60"
 						>
 							{{ monthLabel(grid[0].value.subtract({ months: 1 })) }}
 						</CalendarPrev>
@@ -290,7 +290,7 @@ async function submit() {
 							{{ monthLabel(grid[0].value) }}
 						</CalendarHeading>
 						<CalendarNext
-							class="text-lg text-right text-gray/50 capitalize hover:text-gray duration-75"
+							class="text-lg text-right text-gray/50 capitalize hover:text-gray duration-60"
 						>
 							{{ monthLabel(grid[0].value.add({ months: 1 })) }}
 						</CalendarNext>
@@ -328,7 +328,7 @@ async function submit() {
 									<CalendarCellTrigger
 										:day="weekDate"
 										:month="month.value"
-										class="flex items-center justify-center w-9 h-9 rounded-full text-15 text-gray/40 duration-75 data-outside-view:invisible data-outside-view:pointer-events-none data-disabled:opacity-40 data-disabled:pointer-events-none data-today:font-semibold data-today:text-gray data-selected:bg-[#f7dbe3] data-selected:text-gray"
+										class="flex items-center justify-center w-9 h-9 rounded-full text-15 text-gray/40 duration-60 data-outside-view:invisible data-outside-view:pointer-events-none data-disabled:opacity-40 data-disabled:pointer-events-none data-today:font-semibold data-today:text-gray data-selected:bg-[#f7dbe3] data-selected:text-gray"
 									/>
 								</CalendarCell>
 							</CalendarGridRow>
@@ -353,7 +353,7 @@ async function submit() {
 								? 'bg-brand text-white'
 								: 'border border-brand text-brand'
 						"
-						class="flex items-center justify-center min-h-9 py-1 px-2 rounded-full text-13 duration-50 active:scale-[.98]"
+						class="flex items-center justify-center min-h-9 py-1 px-2 rounded-full text-13 duration-40 active:scale-[0.984]"
 						@click="selectedPeriod = period.label"
 					>
 						{{ period.label }}
@@ -375,7 +375,7 @@ async function submit() {
 								? 'bg-brand text-white'
 								: 'border border-brand text-brand'
 						"
-						class="flex items-center justify-center min-h-9 py-1 px-2 rounded-full text-13 duration-50 active:scale-[.98] disabled:opacity-40 disabled:pointer-events-none"
+						class="flex items-center justify-center min-h-9 py-1 px-2 rounded-full text-13 duration-40 active:scale-[0.984] disabled:opacity-40 disabled:pointer-events-none"
 						@click="selectedTime = slot"
 					>
 						{{ slot }}

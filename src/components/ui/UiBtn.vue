@@ -48,8 +48,8 @@ const color = computed(() => {
             color
         ]"
         class="
-            inline-flex justify-center items-center rounded-full text-center duration-50
-            active:scale-[0.98]
+            inline-flex justify-center items-center rounded-full text-center duration-40
+            active:scale-[0.984]
             disabled:opacity-60 disabled:pointer-events-none
         "
     >

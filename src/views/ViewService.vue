@@ -69,7 +69,7 @@ function submit() {
 				v-for="service in services"
 				:key="service.id"
 				:value="service.id"
-				class="flex items-center w-full min-h-20 py-4 px-6 rounded-4xl bg-card text-left text-gray duration-75 active:scale-95 data-[state=checked]:bg-card-darker data-[state=checked]:shadow-accent"
+				class="flex items-center w-full min-h-20 py-4 px-6 rounded-4xl bg-card text-left text-gray duration-60 active:scale-[0.96] data-[state=checked]:bg-card-darker data-[state=checked]:shadow-accent"
 			>
 				{{ service.title }}
 			</RadioGroupItem>

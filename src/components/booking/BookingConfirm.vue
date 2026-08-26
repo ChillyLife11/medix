@@ -40,7 +40,7 @@ const emit = defineEmits(['confirm', 'cancel', 'edit'])
 					<DialogTitle class="grow text-15 text-gray/60">Данные вашей записи</DialogTitle>
 					<button
 						type="button"
-						class="shrink-0 text-gray/60 duration-75 active:scale-90"
+						class="shrink-0 text-gray/60 duration-60 active:scale-[0.92]"
 						aria-label="Закрыть"
 						@click="open = false"
 					>
@@ -55,7 +55,7 @@ const emit = defineEmits(['confirm', 'cancel', 'edit'])
 							<span>{{ row.value || '—' }}</span>
 							<button
 								type="button"
-								class="shrink-0 text-gray duration-75 active:scale-90"
+								class="shrink-0 text-gray duration-60 active:scale-[0.92]"
 								:aria-label="`Изменить: ${row.label}`"
 								@click="emit('edit', row.step)"
 							>

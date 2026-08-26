@@ -58,7 +58,7 @@ const icon = computed(() => {
 			<div class="pl-4 text-13 text-gray/70">{{ $props.date }}</div>
 			<button
 				type="button"
-				class="flex items-center justify-center min-h-full rounded-full border border-brand duration-50 active:scale-[0.98]"
+				class="flex items-center justify-center min-h-full rounded-full border border-brand duration-40 active:scale-[0.984]"
 				@click="$emit('repeat')"
 			>
 				Повторить
