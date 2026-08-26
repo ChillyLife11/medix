@@ -5,6 +5,14 @@
 Формат — [Keep a Changelog 1.0.0](https://keepachangelog.com/en/1.0.0/),
 версионирование — [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.26] - 2026-08-26
+
+### Removed
+
+- Шрифт Amstelvar: токен `--font-amstelvar`, его `@font-face` и файлы
+  `src/assets/fonts/Amstelvar-Roman.*` (~5.7 МБ). В разметке он нигде не
+  использовался — остаётся один Open Sans.
+
 ## [0.1.25] - 2026-08-26
 
 ### Changed

@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 
 @theme {
-	--font-amstelvar: 'Amstelvar';
 	--font-open-sans: 'Open Sans';
 
 	--color-brand: #01b27d;
@@ -28,20 +27,6 @@
 	color: var(--color-brand);
 	font-size: 22px;
 	margin-bottom: 30px;
-}
-
-@font-face {
-	font-family: 'Amstelvar';
-	src: url('./assets/fonts/Amstelvar-Roman.eot');
-	src:
-		url('./assets/fonts/Amstelvar-Roman.eot?#iefix') format('embedded-opentype'),
-		url('./assets/fonts/Amstelvar-Roman.woff2') format('woff2'),
-		url('./assets/fonts/Amstelvar-Roman.woff') format('woff'),
-		url('./assets/fonts/Amstelvar-Roman.ttf') format('truetype'),
-		url('./assets/fonts/Amstelvar-Roman.svg#Amstelvar-Roman') format('svg');
-	font-weight: normal;
-	font-style: normal;
-	font-display: swap;
 }
 
 @font-face {

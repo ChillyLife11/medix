@@ -43,7 +43,7 @@ UI** (другой дизайн и бренд). Оригинал — рефер�
 - Бренд: `--color-brand: #01b27d` (зелёный), `--color-brand-foreground: #fff`
 - Поверхности: `--color-page #efefed`, `--color-card #fff`, `--color-card-darker #f5f5f5`
 - Текст: `--color-gray #555559`, secondary-палитра
-- Шрифты: `--font-amstelvar` (заголовки), `--font-open-sans` (body, default)
+- Шрифт один: `--font-open-sans` (body, default)
 - Утилита `section-title`, `shadow-accent`, размеры `text-15` / `text-13`
 - Переходы страниц (slide-left/right) — во `App.vue` + классы в `style.css`
 
@@ -77,7 +77,7 @@ src/
     auth/AgreeDialog.vue     # согласия ПДн + запрос номера, окно поверх сплэша
     booking/BookingConfirm.vue # сводка записи перед отправкой (reka-ui Dialog)
     debug/HttpToasts.vue     # ВРЕМЕННО: обмен с API поверх интерфейса (DEBUG_HTTP)
-  assets/fonts/           # Amstelvar, Open Sans
+  assets/fonts/           # Open Sans
 public/                   # favicon.svg + images/ (doctor-*, loading-*, logo.webp, icons.svg)
 index.html                # подключает https://st.max.ru/js/max-web-app.js (SDK MAX)
 ```
