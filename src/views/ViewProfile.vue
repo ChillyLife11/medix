@@ -118,10 +118,6 @@ onMounted(async () => {
 			</div>
 			<div class="text-2xl text-gray">{{ clientName }}</div>
 
-			<pre
-				class="w-full p-2 rounded-2xl bg-card-darker text-13 text-gray whitespace-pre-wrap break-all"
-				>{{ webAppProbe }}</pre>
-
 			<UiLoader v-if="loading" label="Загружаем записи" class="py-2" />
 
 			<div v-else-if="failed" class="text-13 text-center text-gray opacity-70">
