@@ -86,7 +86,9 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 **Готово:**
 - **вход по телефону** (слоя мессенджера сейчас нет): сплэш `ViewHome` (`/`) зовёт
   `checkAuth()` и либо уводит на `/profile`, либо открывает поверх себя окно
-  `AgreeDialog` — согласия и `signIn()`. Номер берётся из `TEST_PHONE`, сессия живёт в памяти (`src/session.js`);
+  `AgreeDialog` — согласия и `signIn()`. Сам сплэш висит минимум `MIN_SPLASH_MS`
+  (3 c) — проверка и пауза ждутся вместе, так что медленный бэкенд его не
+  удлиняет. Номер берётся из `TEST_PHONE`, сессия живёт в памяти (`src/session.js`);
 - **API-слой**: `src/config.js`, `src/api/http.js` (axios + Bearer +
   `apiErrorMessage` + разлогин на 401), `users`, `branches`, `coworkers`,
   `promos`, `appointments`. Dev-прокси `/api` на бэкенд в `vite.config.js`;

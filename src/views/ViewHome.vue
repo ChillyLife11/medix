@@ -12,10 +12,16 @@ const { checkAuth } = useAuth()
 // загрузки остаётся фоном, пока клиент не опознан.
 const agreeing = ref(false)
 
+// Сплэш держим на экране не меньше трёх секунд, даже если клиент опознался
+// быстрее: иначе логотип мелькает и запуск выглядит дёрганым.
+const MIN_SPLASH_MS = 3000
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
 onMounted(async () => {
 	// Есть сохранённая сессия или телефон — сразу в профиль,
 	// иначе просим согласия и номер телефона.
-	const state = await checkAuth()
+	// Проверку и паузу ждём вместе: медленный ответ сплэш не удлиняет.
+	const [state] = await Promise.all([checkAuth(), wait(MIN_SPLASH_MS)])
 	if (state === 'authed') router.replace('/profile')
 	else agreeing.value = true
 })
