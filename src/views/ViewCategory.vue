@@ -27,6 +27,6 @@ const selected = ref('adult')
 			</button>
 		</div>
 
-		<UiBtn class="sticky bottom-7.5 left-0 mt-auto" fluid>Выбрать категорию</UiBtn>
+		<UiBtn class="sticky bottom-7.5 left-0 mt-auto mb-5" fluid>Выбрать категорию</UiBtn>
 	</div>
 </template>
