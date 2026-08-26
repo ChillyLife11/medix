@@ -67,7 +67,6 @@ function addMinutes(startTime, minutes) {
 }
 
 // Тело запроса POST /appointment/create.
-// Status именно с большой буквы — так поле называется в API.
 function appointmentPayload() {
 	return {
 		company_id: COMPANY_ID,
@@ -77,7 +76,7 @@ function appointmentPayload() {
 		date: date.value,
 		start: time.value,
 		end: addMinutes(time.value, APPOINTMENT_MINUTES),
-		Status: 0,
+		status: 0,
 		services: serviceId.value ? [serviceId.value] : [],
 		source: 'max',
 	}

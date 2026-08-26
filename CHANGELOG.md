@@ -5,6 +5,13 @@
 Формат — [Keep a Changelog 1.0.0](https://keepachangelog.com/en/1.0.0/),
 версионирование — [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.29] - 2026-08-26
+
+### Changed
+
+- В теле `POST /appointment/create` поле `status` пишется с маленькой буквы —
+  раньше слали `Status`.
+
 ## [0.1.28] - 2026-08-26
 
 ### Fixed
