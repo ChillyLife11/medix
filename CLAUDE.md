@@ -126,11 +126,11 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 >   функция в `api/coworkers.js` осталась, но **сейчас не вызывается** (см. сетку
 >   времени в «решениях»);
 > - `GET /promo/index`, `GET /promo/view`;
-> - `POST /feedback/create` — **гипотеза**, не подтверждена: эндпоинта под
->   обратную связь нет ни в документации, ни в React-оригинале. Путь и тело
->   (`company_id`, `client_id`, `text`, `source`) взяты по образцу
->   `appointment/create`; пока бэкенд не подтвердит, окно обратной связи будет
->   показывать ошибку отправки. Единственное место — `src/api/feedback.js`;
+> - `POST /review/create` — отзыв из окна обратной связи. Тело —
+>   **multipart/form-data** (не JSON, как у остальных методов): `user_id` (id
+>   клиента), `company_id`, `text`. Путь подтверждён бэкендом; маршрут отвечает
+>   405 на GET, то есть существует и без токена. Единственное место —
+>   `src/api/feedback.js`;
 > - `GET /appointment/index?filter[client_id]=&sort=-date`,
 >   `POST /appointment/create`, `POST /appointment/cancel?id=`;
 > - `GET /user/check-chat-id?chat_id=` — опознание клиента по id аккаунта MAX,

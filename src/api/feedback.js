@@ -2,20 +2,16 @@ import { api } from '@/api/http'
 import { COMPANY_ID } from '@/config'
 import { clientId } from '@/session'
 
-// Отзыв из окна обратной связи.
+// Отзыв из окна обратной связи: POST /review/create.
 //
-// ⚠️ Путь и поля — ГИПОТЕЗА: эндпоинта под обратную связь нет ни в
-// `Документация_API.md`, ни в React-оригинале. Взяли по образцу остальных
-// методов (`appointment/create`): ресурс + /create, JSON, company_id и source.
-// Пока бэкенд не подтвердит путь, отправка будет отвечать ошибкой — она видна
-// пользователю в окне, а тело запроса и ответ — в отладочных тостах.
+// Тело — multipart/form-data (так описан метод у бэкенда), поля:
+// user_id — id клиента, company_id и text. Content-Type проставляет браузер
+// сам вместе с boundary, поэтому заголовок руками не задаём.
 export function sendFeedback(text) {
-	return api
-		.post('/feedback/create', {
-			company_id: COMPANY_ID,
-			client_id: clientId.value,
-			text,
-			source: 'max',
-		})
-		.then((r) => r.data)
+	const body = new FormData()
+	body.append('user_id', clientId.value ?? '')
+	body.append('company_id', COMPANY_ID)
+	body.append('text', text)
+
+	return api.post('/review/create', body).then((r) => r.data)
 }

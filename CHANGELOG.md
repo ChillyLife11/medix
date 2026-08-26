@@ -5,6 +5,19 @@
 Формат — [Keep a Changelog 1.0.0](https://keepachangelog.com/en/1.0.0/),
 версионирование — [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.28] - 2026-08-26
+
+### Fixed
+
+- Обратная связь уходит на подтверждённый бэкендом `POST /review/create` телом
+  `multipart/form-data` (`user_id`, `company_id`, `text`) вместо выдуманного
+  `POST /feedback/create` с JSON — до этого отправка отвечала ошибкой.
+
+### Changed
+
+- Отладочные тосты показывают поля `FormData`: раньше такое тело выводилось как
+  пустой объект.
+
 ## [0.1.27] - 2026-08-26
 
 ### Added
