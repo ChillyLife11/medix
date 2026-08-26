@@ -98,9 +98,8 @@ function submit() {
 			</RadioGroupRoot>
 		</template>
 
-		<!-- Плашка во всю ширину: вылезаем из p-2.5 обёртки отрицательными отступами -->
-		<div class="sticky bottom-0 left-0 mt-auto -mx-2.5 -mb-2.5 p-2.5 pb-7.5 bg-card">
-			<UiBtn :disabled="!selected" fluid @click="submit"> Выбрать филиал </UiBtn>
-		</div>
+		<UiBtn :disabled="!selected" class="sticky bottom-7.5 left-0 mt-auto" fluid @click="submit">
+			Выбрать филиал
+		</UiBtn>
 	</div>
 </template>
