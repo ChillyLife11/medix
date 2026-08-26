@@ -217,7 +217,10 @@ onMounted(async () => {
 				:class="hasAppointments ? '' : 'shadow-accent'"
 				class="w-full p-3 space-y-2.5 rounded-full"
 			>
-				<UiBtn fluid @click="startFromBranch">Записаться</UiBtn>
+				<!-- С актуальными записями «Записаться» убираем: человеку сейчас
+				     нужно прийти на уже назначенный приём, а не завести новый.
+				     Записаться всё равно можно плюсом в таббаре и плиткой «Услуги». -->
+				<UiBtn v-if="!hasAppointments" fluid @click="startFromBranch">Записаться</UiBtn>
 				<UiBtn
 					v-if="shownAppointment"
 					color="secondary"
