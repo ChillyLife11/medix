@@ -21,7 +21,7 @@ defineProps({
 		:class="selected ? 'shadow-accent' : 'shadow-[0px_4px_4px_rgba(0,0,0,0.12)]'"
 		class="relative w-full min-h-37 overflow-hidden rounded-[30px] bg-card-darker text-left duration-75 active:scale-[0.98]"
 	>
-		<div class="relative z-10 py-5 pl-5 pr-37 space-y-0.5 text-gray">
+		<div class="relative z-10 py-5 pl-4 pr-39 space-y-0.5 text-gray">
 			<div class="text-15 font-semibold leading-tight">{{ surname }}</div>
 			<div v-if="name" class="text-13 leading-tight">{{ name }}</div>
 			<div v-if="specialty" class="pt-1.5 text-13 opacity-70">{{ specialty }}</div>
@@ -40,11 +40,12 @@ defineProps({
 		</div>
 		<!-- Снимок вписываем целиком (object-contain) — обрезать нельзя. Фото с
 		     бэкенда квадратные, поэтому ширина столбца задаёт и размер картинки:
-		     140px — максимум, при котором три плашки времени ещё встают в строку. -->
+		     148px — максимум, при котором три плашки времени ещё встают в строку
+		     на экране 360px. -->
 		<img
 			:src="photo"
 			alt=""
-			class="absolute bottom-0 right-0 w-35 h-full object-contain object-right-bottom pointer-events-none"
+			class="absolute bottom-0 right-0 w-37 h-full object-contain object-right-bottom pointer-events-none"
 		/>
 	</button>
 </template>
