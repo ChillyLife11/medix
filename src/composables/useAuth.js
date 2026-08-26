@@ -4,7 +4,7 @@
 // Само состояние сессии — в @/session.
 
 import { computed, ref } from 'vue'
-import { getUserByPhone, registerUser } from '@/api/users'
+import { getUserByChatId, getUserByPhone, registerUser } from '@/api/users'
 import { FALLBACK_PHONE } from '@/config'
 import { clearSession, setSession, token } from '@/session'
 import { useMessenger } from '@/composables/useMessenger'
@@ -25,16 +25,36 @@ const clientName = computed(() => useMessenger().userName || profileName(client.
 export function useAuth() {
 	// Решает состояние авторизации: 'authed' | 'need-register'.
 	// Токен живёт только в памяти, поэтому после перезагрузки страницы клиент
-	// ищется по телефону заново.
+	// ищется заново.
 	//
 	// В MAX номера на этом шаге ещё нет: мессенджер отдаёт его только по
-	// действию пользователя (`requestContact` на экране согласий), поэтому со
-	// сплэша молча войти нечем — ведём на согласия. Там же оказывается и
-	// прод-сборка, открытая вне MAX. Отладочный вход остаётся только в dev.
+	// действию пользователя (`requestContact` в окне согласий). Зато есть id
+	// аккаунта — по нему и опознаём уже зарегистрированного клиента, чтобы не
+	// показывать согласия каждый запуск. Неизвестный аккаунт → согласия и номер.
+	// Вне MAX прод-сборке взять номер неоткуда, отладочный вход есть только в dev.
 	async function checkAuth() {
 		if (token.value) return 'authed'
-		if (useMessenger().isMax || !FALLBACK_PHONE) return 'need-register'
+		const { isMax, user } = useMessenger()
+		if (isMax) return (await signInByChatId(user?.id)) ? 'authed' : 'need-register'
+		if (!FALLBACK_PHONE) return 'need-register'
 		return (await signIn(FALLBACK_PHONE)) ? 'authed' : 'need-register'
+	}
+
+	// Вход без номера — по id аккаунта мессенджера. Работает только для клиента,
+	// которого бэкенд уже связал с MAX (это делает `register-telegram`): для
+	// остальных `check-chat-id` отдаёт null, и мы честно идём за согласиями.
+	async function signInByChatId(chatId) {
+		if (!chatId) return false
+		try {
+			const account = await getUserByChatId(chatId)
+			if (!account?.access_token) return false
+			setSession(account, account.phone ?? null)
+			client.value = account
+			return true
+		} catch (e) {
+			console.warn('[auth] check-chat-id failed', e)
+			return false
+		}
 	}
 
 	// Вход по телефону: ищем клиента, а если такого номера нет — регистрируем.
