@@ -109,6 +109,18 @@ export function shortAddress(branch) {
 	return [named, ...rest].join(', ')
 }
 
+// Часы врача на конкретный день — сетка времени на последнем шаге записи.
+// masterId === null: объединяем часы всех врачей филиала (тот же режим, что и
+// у scheduleDates), иначе берём только выбранного.
+export function scheduleSlots(branch, masterId, date) {
+	const byMaster = branch?.schedule?.[date]
+	if (!byMaster) return []
+	if (masterId !== null && masterId !== undefined) return [...(byMaster[masterId] ?? [])].sort()
+	const all = new Set()
+	for (const times of Object.values(byMaster)) for (const time of times ?? []) all.add(time)
+	return [...all].sort()
+}
+
 // Ближайшие свободные часы врача — для карточки на экране выбора врача.
 // Идём по датам расписания с начала и берём первый день, где ещё осталось
 // время: прошедшие часы и ближайший час от «сейчас» не в счёт, как и на

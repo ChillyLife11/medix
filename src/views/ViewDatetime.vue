@@ -21,7 +21,14 @@ import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
 import BookingConfirm from '@/components/booking/BookingConfirm.vue'
 import { createAppointment } from '@/api/appointments'
-import { getBranch, loadedBranch, scheduleDates, shortAddress } from '@/api/branches'
+import {
+	getBranch,
+	loadedBranch,
+	nearestSlots,
+	scheduleDates,
+	scheduleSlots,
+	shortAddress,
+} from '@/api/branches'
 import { apiErrorMessage } from '@/api/http'
 import { LEAD_MS, useBooking } from '@/composables/useBooking'
 
@@ -56,10 +63,14 @@ onMounted(async () => {
 const openDates = computed(() => scheduleDates(branch.value, masterId.value))
 const isDateClosed = (dateValue) => !openDates.value.has(dateValue.toString())
 
-// Первый рабочий день — с него открываем экран: сегодня врач может не принимать.
+// День, с которого открываем экран: первый, где ещё осталось свободное время.
+// Не просто первый рабочий — сегодня приём мог уже закончиться, и человек попал
+// бы на день, где все часы серые. Это тот же день, что показан в карточке врача.
 function firstOpenDate() {
+	const nearest = nearestSlots(branch.value, masterId.value, 1)?.date
 	const [first] = [...openDates.value].sort()
-	return first ? parseDate(first) : null
+	const day = nearest ?? first
+	return day ? parseDate(day) : null
 }
 
 // Дня может не быть вовсе (у врача нет расписания) — тогда null, и время не
@@ -95,20 +106,18 @@ const selectedTime = ref(null)
 const hourOf = (t) => Number(t.split(':')[0])
 const minuteOf = (t) => Number(t.split(':')[1])
 
-// Рабочий день клиники. Сетка статичная, с шагом в час: 09:00, 10:00 … 18:00 —
-// записаться можно на любой из этих часов. Занят ли конкретный час, проверяет
-// бэкенд при создании записи.
-const WORK_FROM_HOUR = 9
-const WORK_TO_HOUR = 18
-
-const hours = Array.from(
-	{ length: WORK_TO_HOUR - WORK_FROM_HOUR + 1 },
-	(_, i) => `${String(WORK_FROM_HOUR + i).padStart(2, '0')}:00`,
+// Часы приёма приходят из расписания филиала — те же, что показаны в карточке
+// врача. Сетка зависит от врача и дня: у одного день с 9 до 17, у другого только
+// 15:30 и 16:30. Занят ли конкретный час, всё равно проверит бэкенд при создании.
+const hours = computed(() =>
+	selectedDate.value
+		? scheduleSlots(branch.value, masterId.value, selectedDate.value.toString())
+		: [],
 )
 
 const visibleTimes = computed(() => {
 	const period = periods.find((p) => p.label === selectedPeriod.value)
-	return hours.filter((t) => hourOf(t) >= period.from && hourOf(t) < period.to)
+	return hours.value.filter((t) => hourOf(t) >= period.from && hourOf(t) < period.to)
 })
 
 // Записаться можно не раньше чем через час: в 13:20 ближайший доступный час —
@@ -149,12 +158,13 @@ const availableTimes = computed(() => visibleTimes.value.filter((t) => !isTooSoo
 // где всё заблокировано.
 function showPeriodWithFreeSlot() {
 	const inPeriod = (period) =>
-		hours.some((t) => hourOf(t) >= period.from && hourOf(t) < period.to && !isTooSoon(t))
+		hours.value.some((t) => hourOf(t) >= period.from && hourOf(t) < period.to && !isTooSoon(t))
 	if (inPeriod(periods.find((p) => p.label === selectedPeriod.value))) return
 	selectedPeriod.value = (periods.find(inPeriod) ?? periods[0]).label
 }
 
-watch(selectedDate, showPeriodWithFreeSlot, { immediate: true })
+// Следим за часами, а не за датой: они меняются и когда доехало расписание.
+watch(hours, showPeriodWithFreeSlot, { immediate: true })
 
 // Первый доступный слот в периоде — чтобы кнопка не была вечно заблокирована.
 watch(availableTimes, (list) => {
