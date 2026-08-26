@@ -5,22 +5,40 @@
 
 import { computed, ref } from 'vue'
 import { getUserByChatId, getUserByPhone, registerUser } from '@/api/users'
-import { FALLBACK_PHONE } from '@/config'
+import { FALLBACK_PHONE, fileUrl } from '@/config'
 import { clearSession, setSession, token } from '@/session'
 import { useMessenger } from '@/composables/useMessenger'
 
 const client = ref(null)
 
-// Клиент на бэкенде хранит ФИО во вложенном profile — как и остальные
-// пользователи (см. @/api/branches).
+// ФИО клиента. У сотрудников оно лежит во вложенном profile (см. @/api/branches),
+// а клиент из `by-phone` / `check-chat-id` приходит с плоскими полями — читаем оба.
 function profileName(account) {
-	const profile = account?.profile
-	return [profile?.first_name, profile?.last_name].filter(Boolean).join(' ')
+	const source = account?.profile ?? account
+	return [source?.first_name, source?.last_name].filter(Boolean).join(' ')
+}
+
+// Аватар клиента с бэкенда. Когда картинки нет, поле не пустое: приходит голый
+// хост (`https://dental-web.pro/`) — бэкенд склеил базу с пустым путём. Такую
+// ссылку показывать нечем, поэтому считаем её отсутствующей.
+function profilePhoto(account) {
+	const raw = account?.avatar || account?.profile?.avatar || ''
+	if (!raw) return ''
+	const url = fileUrl(raw)
+	try {
+		return new URL(url).pathname === '/' ? '' : url
+	} catch {
+		return ''
+	}
 }
 
 // Имя для экранов: сначала аккаунт MAX, потом карточка клиента на бэкенде.
 // Заглушка нужна только вне мессенджера — в MAX имя есть всегда.
 const clientName = computed(() => useMessenger().userName || profileName(client.value) || 'Пациент')
+
+// Аватар для экранов — тем же порядком. Пустая строка означает «показывайте
+// свою заглушку»: какая именно, решает экран.
+const clientPhoto = computed(() => useMessenger().userPhoto || profilePhoto(client.value))
 
 export function useAuth() {
 	// Решает состояние авторизации: 'authed' | 'need-register'.
@@ -85,5 +103,5 @@ export function useAuth() {
 		clearSession()
 	}
 
-	return { token, client, clientName, checkAuth, signIn, logout }
+	return { token, client, clientName, clientPhoto, checkAuth, signIn, logout }
 }

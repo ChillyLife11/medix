@@ -20,8 +20,10 @@ import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
 const { startBooking } = useBooking()
-// Имя пациента — из аккаунта MAX (см. useAuth.clientName).
-const { clientName } = useAuth()
+// Имя и аватар пациента — из аккаунта MAX, иначе из карточки клиента на бэкенде
+// (см. useAuth). Если фото нет нигде, показываем заглушку из public/images.
+const { clientName, clientPhoto } = useAuth()
+const defaultPhoto = `${import.meta.env.BASE_URL}images/doctor-img.png`
 
 // Две точки входа в запись — с них и начинается порядок шагов.
 function startFromBranch() {
@@ -109,7 +111,7 @@ onMounted(async () => {
 			<div class="relative w-23.25 rounded-full">
 				<span class="block w-full pt-[100%]" />
 				<img
-					:src="`${base}images/doctor-img.png`"
+					:src="clientPhoto || defaultPhoto"
 					alt="Пациент"
 					class="absolute inset-0 w-full h-full rounded-full object-cover object-center"
 				/>
