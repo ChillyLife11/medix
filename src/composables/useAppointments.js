@@ -4,6 +4,7 @@
 
 import { computed, ref } from 'vue'
 import { cancelAppointment, getAppointments, isCurrent, isHistorical } from '@/api/appointments'
+import { shortAddress } from '@/api/branches'
 import { clientId } from '@/session'
 
 // Экранам нужен и вид записи по статусу — отдаём его отсюда же, чтобы вьюхи
@@ -31,6 +32,12 @@ export function doctorName(appointment) {
 		? [profile.first_name, profile.last_name, profile.middle_name].filter(Boolean).join(' ')
 		: [master.last_name, master.first_name, master.middle_name].filter(Boolean).join(' ')
 	return name || master.username || ''
+}
+
+// Филиал приходит вложенным объектом — показываем улицу и дом, как в списке
+// филиалов. Если адреса нет, вызывающий код строку прячет.
+export function branchAddress(appointment) {
+	return appointment.branch ? shortAddress(appointment.branch) : ''
 }
 
 // Что переносим в новый флоу по кнопке «Повторить»: филиал, услуга и врач из

@@ -13,8 +13,17 @@ import {
 	doctorName,
 	longDateLabel,
 	timeRange,
+	branchAddress,
 } from '@/composables/useAppointments'
-import { NotebookPen, CalendarDays, Clock, User, ChevronLeft, ChevronRight } from '@lucide/vue'
+import {
+	NotebookPen,
+	CalendarDays,
+	Clock,
+	User,
+	MapPin,
+	ChevronLeft,
+	ChevronRight,
+} from '@lucide/vue'
 import { useBooking } from '@/composables/useBooking'
 import { useAuth } from '@/composables/useAuth'
 
@@ -184,6 +193,20 @@ onMounted(async () => {
 										{{ timeRange(appointment) }}
 									</span>
 								</div>
+							</div>
+
+							<div
+								v-if="branchAddress(appointment)"
+								class="flex items-center justify-center gap-2 h-11.75 px-4 rounded-full bg-card-darker"
+							>
+								<MapPin
+									:size="18"
+									:stroke-width="1.5"
+									class="shrink-0 text-brand"
+								/>
+								<span class="truncate text-gray">
+									{{ branchAddress(appointment) }}
+								</span>
 							</div>
 
 							<div
