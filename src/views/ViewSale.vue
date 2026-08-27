@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import UiBtn from '@/components/ui/UiBtn.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
 import { getPromos } from '@/api/promos'
@@ -58,8 +57,6 @@ onMounted(async () => {
 				/>
 			</div>
 		</div>
-
-		<UiBtn class="sticky bottom-7.5 left-0 mt-auto mb-5" fluid>Участвовать в акции</UiBtn>
 	</div>
 </template>
 
