@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import UiLoader from '@/components/ui/UiLoader.vue'
 import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import HistoryCard from '@/components/history/HistoryCard.vue'
+import UiTabbar from '@/components/ui/UiTabbar.vue'
 import {
 	useAppointments,
 	serviceTitle,
@@ -36,9 +37,9 @@ onMounted(load)
 </script>
 
 <template>
-	<!-- На экране только карточки записей: точки входа в запись и таббар живут
-	     на главной, сюда ведёт заголовок со стрелкой. -->
-	<div class="min-h-screen flex flex-col p-2.5">
+	<!-- На экране только карточки записей — плюс таббар снизу, как на главной.
+	     Наверх ведёт заголовок со стрелкой. -->
+	<div class="min-h-screen flex flex-col px-2.5 pt-2.5">
 		<UiPageTitle to="/profile">История записей</UiPageTitle>
 
 		<UiLoader v-if="loading" label="Загружаем записи" />
@@ -51,7 +52,7 @@ onMounted(load)
 			Завершённых записей пока нет — актуальные смотрите на главной.
 		</div>
 
-		<div v-else class="space-y-2.5">
+		<div v-else class="space-y-2.5 pb-5">
 			<HistoryCard
 				v-for="appointment in history"
 				:key="appointment.id"
@@ -63,5 +64,11 @@ onMounted(load)
 				@repeat="repeat(appointment)"
 			/>
 		</div>
+
+		<!-- Таббар свои отступы задаёт сам: боковые вычитаем, снизу их нет у
+		     экрана — иначе плашка встала бы ниже, чем на главной. Обёртку не
+		     ставим: sticky работает относительно родителя, и в коробке по высоте
+		     плашки прилипать было бы не к чему. -->
+		<UiTabbar class="-mx-2.5" />
 	</div>
 </template>

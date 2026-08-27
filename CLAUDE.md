@@ -281,7 +281,7 @@ MAX однажды отдаст неизвестный `platform`, `isMax` ст�
 | `ViewHome` `/`             | `pages/welcome`                     | сплэш/загрузка                     |
 | `AgreeDialog` (в `ViewHome`) | `pages/welcome` (Popup+Checkbox)  | согласия ПДн перед регистрацией — окно поверх сплэша, без своего роута |
 | `ViewProfile` `/profile`   | `pages/home/route` + `VisitCard`    | **главный экран**: слайдер записей, плитки, правовая информация, таббар |
-| `ViewActive` `/active`     | `pages/history` + `VisitCard`       | история: выполненные и отменённые — только карточки и заголовок со стрелкой на `/profile` |
+| `ViewActive` `/active`     | `pages/history` + `VisitCard`       | история: выполненные и отменённые — карточки, заголовок со стрелкой на `/profile` и таббар |
 | `ViewSale` `/sale`         | `pages/home/promo`                  | акции                              |
 | `ViewService` `/service`   | `pages/home/services` / `SelectList`| выбор услуги (филиала или всей клиники) |
 | `ViewCategory` `/category` | `create` (панель category)          | выбор категории (на моках)         |
