@@ -16,6 +16,12 @@ function startFromBranch() {
 
 // На своём же экране кнопка остаётся на месте, но ссылкой не становится.
 const linkTo = (path) => (route.path === path ? undefined : path)
+
+// Текущий экран подсвечиваем: обводка и иконка брендовым цветом вместо
+// серой заливки. Отдаём набором пропсов, а не классом: у UiBtn цвет собирается
+// внутри, и дописанный сверху text-* конфликтовал бы с ним.
+const tabLook = (path) =>
+	route.path === path ? { outline: true } : { color: 'secondary', soft: true }
 </script>
 
 <template>
@@ -24,11 +30,11 @@ const linkTo = (path) => (route.path === path ? undefined : path)
 	     mt-auto прижимает её к низу, когда контента меньше экрана. -->
 	<div class="sticky bottom-7.5 z-10 mt-auto mb-7.5 px-2.5">
 		<div class="flex items-center justify-between p-4 rounded-full shadow-accent bg-card">
-			<UiBtn :to="linkTo('/profile')" color="secondary" soft icon>
+			<UiBtn v-bind="tabLook('/profile')" :to="linkTo('/profile')" icon>
 				<House stroke-width="1.1" size="26" />
 			</UiBtn>
 			<UiBtn icon @click="startFromBranch"><Plus size="32" /></UiBtn>
-			<UiBtn :to="linkTo('/active')" color="secondary" soft icon>
+			<UiBtn v-bind="tabLook('/active')" :to="linkTo('/active')" icon>
 				<GalleryHorizontalEnd stroke-width="1.1" size="26" />
 			</UiBtn>
 		</div>
