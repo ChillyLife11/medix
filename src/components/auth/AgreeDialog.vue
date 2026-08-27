@@ -4,7 +4,7 @@
 // экран загрузки, а закрыть окно нельзя — без номера дальше всё равно не пройти.
 import { ref } from 'vue'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle } from 'reka-ui'
-import { Check } from '@lucide/vue'
+import { ExternalLink } from '@lucide/vue'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import { useAuth } from '@/composables/useAuth'
 import { useMessenger } from '@/composables/useMessenger'
@@ -28,10 +28,15 @@ const PHONE_ERRORS = {
 const submitting = ref(false)
 const error = ref('')
 
-// Документы клиники — ссылками прямо в тексте согласий.
+// Ознакомление с политикой обязательно — без него кнопка заблокирована.
+// Рекламная рассылка добровольна, поэтому вход не держит.
+const policy_read = ref(false)
+const marketing_agree = ref(false)
+
+// Документы клиники: политика и согласие на рассылку.
 const DOCS = {
-	privacy: 'https://dental-web.pro/privacy.pdf',
 	policy: 'https://dental-web.pro/policy.pdf',
+	privacy: 'https://dental-web.pro/privacy.pdf',
 }
 
 // Номер спрашиваем у мессенджера — окно и открыто как раз для того, чтобы
@@ -44,10 +49,10 @@ function openDocument(event, url) {
 	if (openLink(url)) event.preventDefault()
 }
 
-// Согласия даются самим фактом продолжения — отдельных галочек нет, о чём и
-// говорит заголовок окна.
+// Согласие на обработку ПДн даётся самим фактом продолжения (так написано в
+// заголовке), поэтому отдельной галочки под него нет.
 async function submit() {
-	if (submitting.value) return
+	if (submitting.value || !policy_read.value) return
 	submitting.value = true
 	error.value = ''
 	try {
@@ -83,57 +88,57 @@ async function submit() {
 				@interact-outside.prevent
 			>
 				<DialogTitle class="max-w-65 text-center text-base font-normal leading-[1.2]">
-					Запуская приложение, Вы даете согласия:
+					Продолжая, Вы даете согласие на обработку персональных данных:
 				</DialogTitle>
 
-				<!-- Ссылки вшиты прямо в пункты: privacy.pdf — «Согласие на обработку
-				     персональных данных» (проверено по содержимому файла),
-				     policy.pdf — политика. В MAX их открывает системный браузер,
-				     см. openDocument(). Маркер — галочка, поэтому список без
-				     собственных маркеров. -->
-				<ul class="w-full mt-4 space-y-2 leading-[1.2] text-gray">
-					<li class="flex items-start gap-2">
-						<Check :size="16" :stroke-width="2" class="shrink-0 mt-0.5 text-brand" />
-						<span>
-							ознакомлен(а) с
-							<a
-								:href="DOCS.policy"
-								target="_blank"
-								rel="noopener"
-								class="underline text-brand"
-								@click="openDocument($event, DOCS.policy)"
-							>
-								политикой конфиденциальности
-							</a>
-						</span>
-					</li>
-					<li class="flex items-start gap-2">
-						<Check :size="16" :stroke-width="2" class="shrink-0 mt-0.5 text-brand" />
-						<span>
-							согласен(а) на
-							<a
-								:href="DOCS.privacy"
-								target="_blank"
-								rel="noopener"
-								class="underline text-brand"
-								@click="openDocument($event, DOCS.privacy)"
-							>
-								обработку персональных данных
-							</a>
-						</span>
-					</li>
-					<li class="flex items-start gap-2">
-						<Check :size="16" :stroke-width="2" class="shrink-0 mt-0.5 text-brand" />
+				<div class="w-full mt-4 space-y-2.5 leading-[1.2] text-gray">
+					<label class="flex items-start">
+						<input v-model="policy_read" type="checkbox" class="peer" hidden />
 						<span
-							>согласен(а) на получение сообщений и информационно-рекламной
-							рассылки</span
-						>
-					</li>
-				</ul>
+							class="shrink-0 block w-5 h-5 mr-2.5 rounded-full bg-[#EBEBEB] peer-checked:bg-brand"
+						></span>
+						<span class="grow">Ознакомлен (-а) с политикой обработки ПД</span>
+					</label>
+					<label class="flex items-start">
+						<input v-model="marketing_agree" type="checkbox" class="peer" hidden />
+						<span
+							class="shrink-0 block w-5 h-5 mr-2.5 rounded-full bg-[#EBEBEB] peer-checked:bg-brand"
+						></span>
+						<span class="grow">
+							Согласен (-а) на получение сообщение и информационно-рекламной рассылки
+						</span>
+					</label>
+				</div>
+
+				<!-- Документы отдельными ссылками: внутри label клик по ссылке
+				     заодно переключал бы галочку. В MAX их открывает системный
+				     браузер, см. openDocument(). -->
+				<div class="w-full mt-4 flex flex-col items-start gap-1 text-[12px]">
+					<a
+						:href="DOCS.policy"
+						target="_blank"
+						rel="noopener"
+						class="flex items-center gap-1 text-brand duration-60 active:scale-[0.96]"
+						@click="openDocument($event, DOCS.policy)"
+					>
+						<span class="underline">Политика обработки ПД</span>
+						<ExternalLink :size="13" :stroke-width="1.5" class="shrink-0" />
+					</a>
+					<a
+						:href="DOCS.privacy"
+						target="_blank"
+						rel="noopener"
+						class="flex items-center gap-1 text-brand duration-60 active:scale-[0.96]"
+						@click="openDocument($event, DOCS.privacy)"
+					>
+						<span class="underline">Согласие на получение сообщений и рассылок</span>
+						<ExternalLink :size="13" :stroke-width="1.5" class="shrink-0" />
+					</a>
+				</div>
 
 				<div v-if="error" class="mt-5 text-13 text-center text-gray">{{ error }}</div>
 
-				<UiBtn :disabled="submitting" class="w-43 mt-5" @click="submit">
+				<UiBtn :disabled="submitting || !policy_read" class="w-43 mt-5" @click="submit">
 					{{ submitting ? 'Проверяем…' : 'Продолжить' }}
 				</UiBtn>
 			</DialogContent>
