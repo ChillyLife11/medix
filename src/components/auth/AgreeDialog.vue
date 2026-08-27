@@ -2,9 +2,8 @@
 // Согласия на обработку ПДн и запрос номера — окно поверх сплэша.
 // Отдельной страницы у согласий нет: пока клиент не опознан, под окном остаётся
 // экран загрузки, а закрыть окно нельзя — без номера дальше всё равно не пройти.
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle } from 'reka-ui'
-import { ExternalLink } from '@lucide/vue'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import { useAuth } from '@/composables/useAuth'
 import { useMessenger } from '@/composables/useMessenger'
@@ -25,15 +24,14 @@ const PHONE_ERRORS = {
 	'no-sdk': 'Откройте приложение в MAX — номер телефона приходит оттуда.',
 }
 
-// Согласие на ПДн предвыбрано.
-const personal_agree = ref(true)
-const marketing_agree = ref(false)
 const submitting = ref(false)
 const error = ref('')
 
-const btn_disabled = computed(
-	() => !personal_agree.value || !marketing_agree.value || submitting.value,
-)
+// Документы клиники — ссылками прямо в тексте согласий.
+const DOCS = {
+	privacy: 'https://dental-web.pro/privacy.pdf',
+	policy: 'https://dental-web.pro/policy.pdf',
+}
 
 // Номер спрашиваем у мессенджера — окно и открыто как раз для того, чтобы
 // пользователь дал согласия и поделился контактом. В MAX фолбэка нет: не дал
@@ -45,8 +43,10 @@ function openDocument(event, url) {
 	if (openLink(url)) event.preventDefault()
 }
 
+// Согласия даются самим фактом продолжения — отдельных галочек нет, о чём и
+// говорит заголовок окна.
 async function submit() {
-	if (btn_disabled.value) return
+	if (submitting.value) return
 	submitting.value = true
 	error.value = ''
 	try {
@@ -81,71 +81,45 @@ async function submit() {
 				@focus-outside.prevent
 				@interact-outside.prevent
 			>
-				<DialogTitle class="max-w-57.5 text-center text-base font-normal leading-[0.9]">
-					Запуская приложение Вы даете согласие на обработку персональных данных:
+				<DialogTitle class="max-w-65 text-center text-base font-normal leading-[1.2]">
+					Запуская приложение, Вы даете согласия:
 				</DialogTitle>
 
-				<div class="max-w-65 space-y-2.5 mt-5">
-					<label class="group flex items-start">
-						<input
-							v-model="personal_agree"
-							type="checkbox"
-							class="peer"
-							checked
-							hidden
-						/>
-						<span
-							class="shrink-0 block w-5 h-5 mr-2.5 rounded-full bg-[#EBEBEB] peer-checked:bg-brand"
-						></span>
-						<div class="grow leading-[1.2] text-gray">
-							- согласен(-а) на обработку персональных данных
-						</div>
-					</label>
-					<label class="group flex items-start">
-						<input v-model="marketing_agree" type="checkbox" class="peer" hidden />
-						<span
-							class="shrink-0 block w-5 h-5 mr-2.5 rounded-full bg-[#EBEBEB] peer-checked:bg-brand"
-						></span>
-						<div class="grow leading-[1.2] text-gray">
-							- согласен(-а) на получение сообщений и информационно-рекламной рассылки
-						</div>
-					</label>
-				</div>
-
-				<!-- Документы клиники: privacy.pdf — это «Согласие на обработку
-				     персональных данных» (проверено по содержимому), policy.pdf —
-				     политика. Открываем в отдельной вкладке: внутри мини-аппы
-				     уводить с экрана согласий некуда. -->
-				<!-- Ширину чекбоксов (max-w-65) тут не держим: название документа
-				     длинное и в неё не влезает. Кегль мельче основного — иначе
-				     строка ломается пополам на узких экранах. -->
-				<div class="w-full mt-4 flex flex-col items-start gap-1 text-[12px]">
-					<a
-						href="https://dental-web.pro/privacy.pdf"
-						target="_blank"
-						rel="noopener"
-						@click="openDocument($event, `https://dental-web.pro/privacy.pdf`)"
-						class="flex items-center gap-1 text-brand duration-60 active:scale-[0.96]"
-					>
-						<span class="underline">Согласие на обработку персональных данных</span>
-						<ExternalLink :size="13" :stroke-width="1.5" class="shrink-0" />
-					</a>
-					<a
-						href="https://dental-web.pro/policy.pdf"
-						target="_blank"
-						rel="noopener"
-						@click="openDocument($event, `https://dental-web.pro/policy.pdf`)"
-						class="flex items-center gap-1 text-brand duration-60 active:scale-[0.96]"
-					>
-						<span class="underline">Политика конфиденциальности</span>
-						<ExternalLink :size="13" :stroke-width="1.5" class="shrink-0" />
-					</a>
-				</div>
+				<!-- Ссылки вшиты прямо в пункты: privacy.pdf — «Согласие на обработку
+				     персональных данных» (проверено по содержимому файла),
+				     policy.pdf — политика. В MAX их открывает системный браузер,
+				     см. openDocument(). -->
+				<ol class="w-full mt-4 pl-5 list-decimal space-y-2 leading-[1.2] text-gray">
+					<li>
+						<a
+							:href="DOCS.privacy"
+							target="_blank"
+							rel="noopener"
+							class="underline text-brand"
+							@click="openDocument($event, DOCS.privacy)"
+						>
+							обработку персональных данных
+						</a>
+					</li>
+					<li>получение сообщений и информационно-рекламной рассылки</li>
+					<li>
+						ознакомление с
+						<a
+							:href="DOCS.policy"
+							target="_blank"
+							rel="noopener"
+							class="underline text-brand"
+							@click="openDocument($event, DOCS.policy)"
+						>
+							политикой конфиденциальности
+						</a>
+					</li>
+				</ol>
 
 				<div v-if="error" class="mt-5 text-13 text-center text-gray">{{ error }}</div>
 
-				<UiBtn :disabled="btn_disabled" class="w-43 mt-5" @click="submit">
-					{{ submitting ? 'Проверяем…' : 'Отправить' }}
+				<UiBtn :disabled="submitting" class="w-43 mt-5" @click="submit">
+					{{ submitting ? 'Проверяем…' : 'Продолжить' }}
 				</UiBtn>
 			</DialogContent>
 		</DialogPortal>
