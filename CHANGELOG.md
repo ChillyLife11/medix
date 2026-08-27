@@ -5,6 +5,13 @@
 Формат — [Keep a Changelog 1.0.0](https://keepachangelog.com/en/1.0.0/),
 версионирование — [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.44] - 2026-08-27
+
+### Changed
+
+- Отладочные тосты с обменом по API выключены (`DEBUG_HTTP = false`): код на
+  месте, включается одной правкой в `src/config.js`.
+
 ## [0.1.43] - 2026-08-27
 
 ### Added
