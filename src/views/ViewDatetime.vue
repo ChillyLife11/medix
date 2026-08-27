@@ -58,8 +58,12 @@ onMounted(async () => {
 })
 
 // Дни, когда выбранный врач принимает в этом филиале. Расписание приходит в
-// филиале и покрывает только ближайшую неделю — дни за её пределами закрыты
-// так же, как прошедшие: их видно, но выбрать нельзя.
+// филиале и покрывает только ближайшую неделю — дни за её пределами закрыты:
+// их видно, но выбрать нельзя.
+// Правило отдаём календарю как `is-date-unavailable`, а не `is-date-disabled`:
+// тогда нерабочие дни получают `data-unavailable`, а прошедшие (их отсекает
+// `min-value`) — `data-disabled`, и в вёрстке их можно развести по виду:
+// прошедшие зачёркнуты, нерабочие просто бледные, рабочие чёрные.
 const openDates = computed(() => scheduleDates(branch.value, masterId.value))
 const isDateClosed = (dateValue) => !openDates.value.has(dateValue.toString())
 
@@ -282,7 +286,7 @@ async function submit() {
 					v-model="selectedDate"
 					v-model:placeholder="placeholder"
 					:min-value="minDate"
-					:is-date-disabled="isDateClosed"
+					:is-date-unavailable="isDateClosed"
 					:week-starts-on="1"
 					weekday-format="short"
 					locale="ru"
@@ -338,7 +342,7 @@ async function submit() {
 									<CalendarCellTrigger
 										:day="weekDate"
 										:month="month.value"
-										class="flex items-center justify-center w-9 h-9 rounded-full text-15 text-gray/40 duration-60 data-outside-view:invisible data-outside-view:pointer-events-none data-disabled:opacity-40 data-disabled:pointer-events-none data-today:font-semibold data-today:text-gray data-selected:bg-[#f7dbe3] data-selected:text-gray"
+										class="flex items-center justify-center w-9 h-9 rounded-full text-15 text-black duration-60 data-outside-view:invisible data-outside-view:pointer-events-none data-disabled:line-through data-disabled:decoration-2 data-disabled:text-gray/40 data-disabled:pointer-events-none data-unavailable:text-gray/40 data-unavailable:pointer-events-none data-today:font-semibold data-selected:bg-[#f7dbe3] data-selected:text-gray"
 									/>
 								</CalendarCell>
 							</CalendarGridRow>
