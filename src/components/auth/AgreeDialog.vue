@@ -4,6 +4,7 @@
 // экран загрузки, а закрыть окно нельзя — без номера дальше всё равно не пройти.
 import { computed, ref } from 'vue'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle } from 'reka-ui'
+import { ExternalLink } from '@lucide/vue'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import { useAuth } from '@/composables/useAuth'
 import { useMessenger } from '@/composables/useMessenger'
@@ -103,6 +104,31 @@ async function submit() {
 							- согласен(-а) на получение сообщений и информационно-рекламной рассылки
 						</div>
 					</label>
+				</div>
+
+				<!-- Документы клиники: privacy.pdf — это «Согласие на обработку
+				     персональных данных» (проверено по содержимому), policy.pdf —
+				     политика. Открываем в отдельной вкладке: внутри мини-аппы
+				     уводить с экрана согласий некуда. -->
+				<div class="max-w-65 mt-4 flex flex-col items-start gap-1 text-13">
+					<a
+						href="https://dental-web.pro/privacy.pdf"
+						target="_blank"
+						rel="noopener"
+						class="flex items-start gap-1 text-brand duration-60 active:scale-[0.96]"
+					>
+						<span class="underline">Согласие на обработку персональных данных</span>
+						<ExternalLink :size="14" :stroke-width="1.5" class="shrink-0 mt-0.5" />
+					</a>
+					<a
+						href="https://dental-web.pro/policy.pdf"
+						target="_blank"
+						rel="noopener"
+						class="flex items-start gap-1 text-brand duration-60 active:scale-[0.96]"
+					>
+						<span class="underline">Политика конфиденциальности</span>
+						<ExternalLink :size="14" :stroke-width="1.5" class="shrink-0 mt-0.5" />
+					</a>
 				</div>
 
 				<div v-if="error" class="mt-5 text-13 text-center text-gray">{{ error }}</div>
