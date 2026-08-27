@@ -111,28 +111,26 @@ async function submit() {
 				     политика. Открываем в отдельной вкладке: внутри мини-аппы
 				     уводить с экрана согласий некуда. -->
 				<!-- Ширину чекбоксов (max-w-65) тут не держим: название документа
-				     длинное и в неё не влезает. На узких экранах ещё и сбавляем
-				     кегль, иначе строка ломается пополам. -->
-				<div
-					class="w-full mt-4 flex flex-col items-start gap-1 text-[12px] min-[375px]:text-13"
-				>
+				     длинное и в неё не влезает. Кегль мельче основного — иначе
+				     строка ломается пополам на узких экранах. -->
+				<div class="w-full mt-4 flex flex-col items-start gap-1 text-[12px]">
 					<a
 						href="https://dental-web.pro/privacy.pdf"
 						target="_blank"
 						rel="noopener"
-						class="flex items-start gap-1 text-brand duration-60 active:scale-[0.96]"
+						class="flex items-center gap-1 text-brand duration-60 active:scale-[0.96]"
 					>
 						<span class="underline">Согласие на обработку персональных данных</span>
-						<ExternalLink :size="14" :stroke-width="1.5" class="shrink-0 mt-0.5" />
+						<ExternalLink :size="13" :stroke-width="1.5" class="shrink-0" />
 					</a>
 					<a
 						href="https://dental-web.pro/policy.pdf"
 						target="_blank"
 						rel="noopener"
-						class="flex items-start gap-1 text-brand duration-60 active:scale-[0.96]"
+						class="flex items-center gap-1 text-brand duration-60 active:scale-[0.96]"
 					>
 						<span class="underline">Политика конфиденциальности</span>
-						<ExternalLink :size="14" :stroke-width="1.5" class="shrink-0 mt-0.5" />
+						<ExternalLink :size="13" :stroke-width="1.5" class="shrink-0" />
 					</a>
 				</div>
 
