@@ -5,6 +5,8 @@ import { X, Check, Clock } from '@lucide/vue'
 const $props = defineProps({
 	service: String,
 	doctor: String,
+	// Адрес филиала — как в слайдере на главной, строкой над врачом.
+	address: String,
 	date: String,
 	// 'complete' — выполнена, 'canceled' — отменена, 'pending' — все остальные
 	// статусы: лист ожидания, отправлена в МИС, напоминание, подтверждена.
@@ -45,6 +47,12 @@ const icon = computed(() => {
 			>
 				<component :is="icon" stroke-width="1" />
 			</div>
+		</div>
+		<div
+			v-if="$props.address"
+			class="flex items-center gap-4 p-2 h-15 rounded-full bg-card-darker"
+		>
+			<div class="grow text-center text-13 text-gray/70">{{ $props.address }}</div>
 		</div>
 		<div
 			v-if="$props.doctor"

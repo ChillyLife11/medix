@@ -8,6 +8,7 @@ import {
 	useAppointments,
 	serviceTitle,
 	doctorName,
+	branchAddress,
 	dateLabel,
 	statusKind,
 	repeatSelection,
@@ -56,6 +57,7 @@ onMounted(load)
 				:key="appointment.id"
 				:service="serviceTitle(appointment)"
 				:doctor="doctorName(appointment)"
+				:address="branchAddress(appointment)"
 				:date="dateLabel(appointment)"
 				:status="statusKind(appointment)"
 				@repeat="repeat(appointment)"
