@@ -12,9 +12,9 @@ const { checkAuth } = useAuth()
 // загрузки остаётся фоном, пока клиент не опознан.
 const agreeing = ref(false)
 
-// Сплэш держим на экране не меньше трёх секунд, даже если клиент опознался
+// Сплэш держим на экране не меньше двух секунд, даже если клиент опознался
 // быстрее: иначе логотип мелькает и запуск выглядит дёрганым.
-const MIN_SPLASH_MS = 3000
+const MIN_SPLASH_MS = 2000
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 onMounted(async () => {
