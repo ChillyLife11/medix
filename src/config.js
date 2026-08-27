@@ -16,10 +16,10 @@ export const TEST_PHONE = '71111111113'
 export const FALLBACK_PHONE = import.meta.env.DEV ? TEST_PHONE : null
 
 // Отладочные тосты с обменом по API: тело запроса и ответ поверх интерфейса —
-// внутри MAX нет консоли, иначе обмен не увидеть. Сейчас включены, в том числе
-// в прод-сборке: отлаживаем именно её. Перед релизом выключить (или удалить
-// @/components/debug вместе с @/composables/useHttpLog).
-export const DEBUG_HTTP = true
+// внутри MAX нет консоли, иначе обмен не увидеть. Сейчас выключены; код цел
+// (@/composables/useHttpLog, @/components/debug/HttpToasts и пара перехватчиков
+// в @/api/http), достаточно вернуть true. Перед релизом можно удалить совсем.
+export const DEBUG_HTTP = false
 
 // Картинки приходят путями вида /uploads/... — их нужно префиксовать хостом бэка
 // (прокси в dev настроен только на /api).
