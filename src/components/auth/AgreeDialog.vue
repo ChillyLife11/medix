@@ -110,7 +110,12 @@ async function submit() {
 				     персональных данных» (проверено по содержимому), policy.pdf —
 				     политика. Открываем в отдельной вкладке: внутри мини-аппы
 				     уводить с экрана согласий некуда. -->
-				<div class="max-w-65 mt-4 flex flex-col items-start gap-1 text-13">
+				<!-- Ширину чекбоксов (max-w-65) тут не держим: название документа
+				     длинное и в неё не влезает. На узких экранах ещё и сбавляем
+				     кегль, иначе строка ломается пополам. -->
+				<div
+					class="w-full mt-4 flex flex-col items-start gap-1 text-[12px] min-[375px]:text-13"
+				>
 					<a
 						href="https://dental-web.pro/privacy.pdf"
 						target="_blank"
