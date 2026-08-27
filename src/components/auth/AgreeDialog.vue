@@ -68,7 +68,7 @@ async function submit() {
 			     номера, приложению нечего показать под окном, кроме сплэша. -->
 			<DialogContent
 				aria-describedby="undefined"
-				class="fixed inset-0 z-50 m-auto flex h-fit max-h-[92vh] w-[calc(100%-3rem)] max-w-100 flex-col items-center overflow-y-auto p-7 rounded-4xl bg-card data-[state=open]:animate-[dialog-in_0.2s_ease] data-[state=closed]:animate-[dialog-out_0.15s_ease]"
+				class="fixed inset-0 z-50 m-auto flex h-fit max-h-[92vh] w-[calc(100%-2rem)] max-w-100 flex-col items-center overflow-y-auto p-5 rounded-4xl bg-card data-[state=open]:animate-[dialog-in_0.2s_ease] data-[state=closed]:animate-[dialog-out_0.15s_ease]"
 				@open-auto-focus.prevent
 				@escape-key-down.prevent
 				@pointer-down-outside.prevent
