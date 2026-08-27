@@ -103,7 +103,7 @@ async function submit() {
 					</li>
 					<li>получение сообщений и информационно-рекламной рассылки</li>
 					<li>
-						ознакомление с
+						ознакомились с
 						<a
 							:href="DOCS.policy"
 							target="_blank"
