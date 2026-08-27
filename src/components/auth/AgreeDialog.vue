@@ -4,6 +4,7 @@
 // экран загрузки, а закрыть окно нельзя — без номера дальше всё равно не пройти.
 import { ref } from 'vue'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle } from 'reka-ui'
+import { Check } from '@lucide/vue'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import { useAuth } from '@/composables/useAuth'
 import { useMessenger } from '@/composables/useMessenger'
@@ -88,33 +89,47 @@ async function submit() {
 				<!-- Ссылки вшиты прямо в пункты: privacy.pdf — «Согласие на обработку
 				     персональных данных» (проверено по содержимому файла),
 				     policy.pdf — политика. В MAX их открывает системный браузер,
-				     см. openDocument(). -->
-				<ol class="w-full mt-4 pl-5 list-decimal space-y-2 leading-[1.2] text-gray">
-					<li>
-						<a
-							:href="DOCS.privacy"
-							target="_blank"
-							rel="noopener"
-							class="underline text-brand"
-							@click="openDocument($event, DOCS.privacy)"
-						>
-							обработку персональных данных
-						</a>
+				     см. openDocument(). Маркер — галочка, поэтому список без
+				     собственных маркеров. -->
+				<ul class="w-full mt-4 space-y-2 leading-[1.2] text-gray">
+					<li class="flex items-start gap-2">
+						<Check :size="16" :stroke-width="2" class="shrink-0 mt-0.5 text-brand" />
+						<span>
+							ознакомлен(а) с
+							<a
+								:href="DOCS.policy"
+								target="_blank"
+								rel="noopener"
+								class="underline text-brand"
+								@click="openDocument($event, DOCS.policy)"
+							>
+								политикой конфиденциальности
+							</a>
+						</span>
 					</li>
-					<li>получение сообщений и информационно-рекламной рассылки</li>
-					<li>
-						ознакомились с
-						<a
-							:href="DOCS.policy"
-							target="_blank"
-							rel="noopener"
-							class="underline text-brand"
-							@click="openDocument($event, DOCS.policy)"
-						>
-							политикой конфиденциальности
-						</a>
+					<li class="flex items-start gap-2">
+						<Check :size="16" :stroke-width="2" class="shrink-0 mt-0.5 text-brand" />
+						<span>
+							согласен(а) на
+							<a
+								:href="DOCS.privacy"
+								target="_blank"
+								rel="noopener"
+								class="underline text-brand"
+								@click="openDocument($event, DOCS.privacy)"
+							>
+								обработку персональных данных
+							</a>
+						</span>
 					</li>
-				</ol>
+					<li class="flex items-start gap-2">
+						<Check :size="16" :stroke-width="2" class="shrink-0 mt-0.5 text-brand" />
+						<span
+							>согласен(а) на получение сообщений и информационно-рекламной
+							рассылки</span
+						>
+					</li>
+				</ul>
 
 				<div v-if="error" class="mt-5 text-13 text-center text-gray">{{ error }}</div>
 
