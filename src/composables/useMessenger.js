@@ -35,6 +35,16 @@ function userFields() {
 	}
 }
 
+// Внешняя ссылка. Внутри мини-аппы PDF не отрисовывается — файл просто
+// скачивается, поэтому в MAX отдаём ссылку хосту (`WebAppOpenLink`), и документ
+// открывает системный браузер. Вернули false — значит SDK нет и ссылку надо
+// открыть обычным способом.
+function openLink(url) {
+	if (typeof webApp?.openLink !== 'function') return false
+	webApp.openLink(url)
+	return true
+}
+
 // Отказ и ошибки приходят как { error: { code: 'client.request_phone.<reason>' } }.
 const REASONS = {
 	user_refused_provide_phone_number: 'refused',
@@ -68,5 +78,5 @@ async function requestPhone() {
 }
 
 export function useMessenger() {
-	return { isMax, user, userName, userPhoto, userFields, requestPhone }
+	return { isMax, user, userName, userPhoto, userFields, requestPhone, openLink }
 }

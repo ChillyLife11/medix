@@ -14,7 +14,7 @@ const open = defineModel('open', { type: Boolean, default: false })
 const emit = defineEmits(['signed'])
 
 const { signIn } = useAuth()
-const { isMax, requestPhone } = useMessenger()
+const { isMax, requestPhone, openLink } = useMessenger()
 
 // Текст под кнопкой, если номер получить не удалось. Отказ — не ошибка
 // приложения, поэтому объясняем, что делать дальше.
@@ -39,6 +39,12 @@ const btn_disabled = computed(
 // пользователь дал согласия и поделился контактом. В MAX фолбэка нет: не дал
 // номер — не вошёл. Отладочный номер подставляется только в dev-сборке вне
 // мессенджера.
+// Документы клиники. В MAX открываем их через SDK — иначе мини-апп скачивает
+// PDF вместо показа. Вне мессенджера ссылка работает как обычная.
+function openDocument(event, url) {
+	if (openLink(url)) event.preventDefault()
+}
+
 async function submit() {
 	if (btn_disabled.value) return
 	submitting.value = true
@@ -118,6 +124,7 @@ async function submit() {
 						href="https://dental-web.pro/privacy.pdf"
 						target="_blank"
 						rel="noopener"
+						@click="openDocument($event, `https://dental-web.pro/privacy.pdf`)"
 						class="flex items-center gap-1 text-brand duration-60 active:scale-[0.96]"
 					>
 						<span class="underline">Согласие на обработку персональных данных</span>
@@ -127,6 +134,7 @@ async function submit() {
 						href="https://dental-web.pro/policy.pdf"
 						target="_blank"
 						rel="noopener"
+						@click="openDocument($event, `https://dental-web.pro/policy.pdf`)"
 						class="flex items-center gap-1 text-brand duration-60 active:scale-[0.96]"
 					>
 						<span class="underline">Политика конфиденциальности</span>
