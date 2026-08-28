@@ -48,8 +48,13 @@ const routes = [
 	},
 ]
 
+// База сборки может быть полным адресом (`https://host/max/app-1/`) — так файлы
+// раздаются с хоста клиники. Роутеру нужен только путь, иначе он приклеит его
+// к текущему адресу целиком.
+const basePath = import.meta.env.BASE_URL.replace(/^\w+:\/\/[^/]+/, '')
+
 const router = createRouter({
-	history: createWebHistory(import.meta.env.BASE_URL),
+	history: createWebHistory(basePath),
 	routes,
 })
 

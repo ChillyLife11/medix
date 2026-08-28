@@ -4,16 +4,21 @@ import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
 	// Хост бэкенда берём из .env (VITE_API_HOST), чтобы он был в одном месте
 	// с MEDIA_BASE в src/config.js.
 	const env = loadEnv(mode, process.cwd(), 'VITE_')
 	const apiHost = env.VITE_API_HOST ?? 'https://dental-web.pro'
+	const companyId = env.VITE_COMPANY_ID ?? '1'
+	// Хост, с которого раздаются файлы сборки. По умолчанию тот же, что у API.
+	const assetHost = env.VITE_ASSET_HOST ?? apiHost
 
 	return {
-		// На GitHub Pages приложение живёт в подпапке (/<repo>/), поэтому база
-		// приходит из VITE_BASE (её задаёт workflow). Локально — корень.
-		base: env.VITE_BASE ?? '/',
+		// На сервере мини-апп живёт в подпапке компании — туда её распаковывает
+		// company/unzip после деплоя. Ссылки на файлы делаем полными, вместе с
+		// хостом: <host>/max/app-<company_id>/assets/... Локально dev-сервер
+		// отдаёт всё из корня. VITE_BASE перебивает оба варианта.
+		base: env.VITE_BASE ?? (command === 'build' ? `${assetHost}/max/app-${companyId}/` : '/'),
 		plugins: [vue(), tailwindcss()],
 		build: {
 			rollupOptions: {
