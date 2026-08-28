@@ -12,6 +12,7 @@
 import { ref } from 'vue'
 import { COMPANY_ID } from '@/config'
 import { clientId } from '@/session'
+import { dropBranches } from '@/api/branches'
 
 const flow = ref('branch')
 const branchId = ref(null)
@@ -31,8 +32,12 @@ function reset() {
 // Старт нового флоу с точки входа: сбрасываем прошлый выбор (иначе экраны
 // подставят филиал и услугу от предыдущей записи) и запоминаем порядок шагов —
 // по нему экраны решают, что грузить и куда вести дальше.
+// Заодно забываем загруженные филиалы: справочник тянет за собой услуги, врачей
+// и расписание, а они за время сеанса могли измениться — каждая новая запись
+// начинается со свежих данных.
 function startBooking(kind) {
 	reset()
+	dropBranches()
 	flow.value = kind
 }
 
@@ -45,6 +50,7 @@ function isServiceFirst() {
 // осталось выбрать только дату и время. Дату и время не переносим — они в прошлом.
 function startRepeat({ branch = null, service = null, master = null } = {}) {
 	reset()
+	dropBranches()
 	flow.value = 'branch'
 	branchId.value = branch
 	serviceId.value = service
