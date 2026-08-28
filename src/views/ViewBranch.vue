@@ -91,7 +91,7 @@ function submit() {
 					v-for="branch in branches"
 					:key="branch.id"
 					:value="branch.id"
-					class="flex items-center justify-center min-h-22.75 p-2.5 rounded-4xl bg-card text-center text-15 text-gray duration-60 active:scale-[0.96] data-[state=checked]:bg-card-darker data-[state=checked]:shadow-accent"
+					class="flex items-center justify-center min-h-22.75 p-2.5 rounded-4xl border border-transparent bg-card text-center text-15 text-gray duration-60 active:scale-[0.96] data-[state=checked]:border-brand data-[state=checked]:bg-card-darker data-[state=checked]:shadow-accent"
 				>
 					{{ shortAddress(branch) }}
 				</RadioGroupItem>

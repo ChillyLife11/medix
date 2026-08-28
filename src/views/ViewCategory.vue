@@ -19,8 +19,12 @@ const selected = ref('adult')
 				v-for="category in categories"
 				:key="category.key"
 				type="button"
-				:class="selected === category.key ? 'bg-card-darker shadow-accent' : 'bg-card'"
-				class="flex items-center justify-center min-h-22.75 p-2.5 rounded-4xl text-center text-15 text-gray duration-60 active:scale-[0.96]"
+				:class="
+					selected === category.key
+						? 'border-brand bg-card-darker shadow-accent'
+						: 'border-transparent bg-card'
+				"
+				class="flex items-center justify-center min-h-22.75 p-2.5 rounded-4xl border text-center text-15 text-gray duration-60 active:scale-[0.96]"
 				@click="selected = category.key"
 			>
 				{{ category.label }}
