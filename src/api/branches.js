@@ -90,19 +90,35 @@ export function loadedBranchesWithService(serviceId) {
 	return branches ? withService(branches, serviceId) : null
 }
 
+// Часы врача на дату. Бэкенд отдаёт их в двух видах: массивом ["09:00", …] и
+// объектом { "1": "11:00", "3": "13:00" } — это PHP отдаёт разреженный массив
+// (после занятых слотов индексы идут с пропусками) объектом, а не списком.
+// Приводим оба вида к массиву времён.
+function timeList(slots) {
+	if (Array.isArray(slots)) return slots
+	if (slots && typeof slots === 'object') return Object.values(slots)
+	return []
+}
+
+// Врачи филиала на дату: { "<id врача>": часы }. День без приёма приходит
+// пустым массивом вместо объекта — по той же причине, что и часы выше.
+function bySchedule(branch, date) {
+	const byMaster = branch?.schedule?.[date]
+	return byMaster && !Array.isArray(byMaster) ? byMaster : {}
+}
+
 // Расписание филиала: { "YYYY-MM-DD": { "<id врача>": ["09:00", …] } }.
 // Бэкенд отдаёт только ближайшие дни (около недели) и только рабочие — значит
 // дни, которых в расписании нет, для записи закрыты.
 // Врача учитываем: в один и тот же день в филиале принимают не все.
 export function scheduleDates(branch, masterId = null) {
 	const schedule = branch?.schedule ?? {}
-	const open = Object.entries(schedule)
-		.filter(([, byMaster]) =>
-			masterId === null
-				? Object.values(byMaster ?? {}).some((slots) => slots?.length)
-				: (byMaster?.[masterId] ?? []).length > 0,
-		)
-		.map(([date]) => date)
+	const open = Object.keys(schedule).filter((date) => {
+		const byMaster = bySchedule(branch, date)
+		return masterId === null
+			? Object.values(byMaster).some((slots) => timeList(slots).length)
+			: timeList(byMaster[masterId]).length > 0
+	})
 	return new Set(open)
 }
 
@@ -123,11 +139,10 @@ export function shortAddress(branch) {
 // masterId === null: объединяем часы всех врачей филиала (тот же режим, что и
 // у scheduleDates), иначе берём только выбранного.
 export function scheduleSlots(branch, masterId, date) {
-	const byMaster = branch?.schedule?.[date]
-	if (!byMaster) return []
-	if (masterId !== null && masterId !== undefined) return [...(byMaster[masterId] ?? [])].sort()
+	const byMaster = bySchedule(branch, date)
+	if (masterId !== null && masterId !== undefined) return [...timeList(byMaster[masterId])].sort()
 	const all = new Set()
-	for (const times of Object.values(byMaster)) for (const time of times ?? []) all.add(time)
+	for (const slots of Object.values(byMaster)) for (const time of timeList(slots)) all.add(time)
 	return [...all].sort()
 }
 
@@ -139,9 +154,9 @@ export function nearestSlots(branch, masterId, count = 3) {
 	const schedule = branch?.schedule ?? {}
 	const now = Date.now()
 	for (const date of Object.keys(schedule).sort()) {
-		const times = (schedule[date]?.[masterId] ?? []).filter(
-			(time) => new Date(`${date}T${time}`).getTime() - now >= LEAD_MS,
-		)
+		const times = timeList(bySchedule(branch, date)[masterId])
+			.filter((time) => new Date(`${date}T${time}`).getTime() - now >= LEAD_MS)
+			.sort()
 		if (times.length) return { date, times: times.slice(0, count) }
 	}
 	return null
