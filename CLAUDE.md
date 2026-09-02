@@ -298,7 +298,8 @@ GitHub Pages больше нет (`deploy.yml` удалён), `VITE_API_BASE` в
 абсолютные, с хостом. Правило работает **только при `build`**
 (`command === 'build'`), dev-сервер по-прежнему отдаёт всё из корня. Хост —
 `VITE_API_HOST` (перебивается `VITE_ASSET_HOST`), компания — `VITE_COMPANY_ID`
-(по умолчанию `1`), а `VITE_BASE` перебивает базу целиком.
+(по умолчанию `3` — «Клиника Доктора Дабаева»; тот же дефолт у `COMPANY_ID` в
+`src/config.js`), а `VITE_BASE` перебивает базу целиком.
 
 ⚠️ **Роутеру базу с хостом отдавать нельзя**: `createWebHistory` не отрезает
 origin сам и склеил бы `/https://host/max/app-1`. Поэтому в `router/index.js`

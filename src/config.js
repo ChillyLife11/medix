@@ -4,7 +4,7 @@
 // На статике (GitHub Pages) прокси нет, поэтому сборка получает абсолютный
 // адрес через VITE_API_BASE — там запросы уже зависят от CORS на бэкенде.
 export const API_BASE = import.meta.env.VITE_API_BASE ?? '/api'
-export const COMPANY_ID = Number(import.meta.env.VITE_COMPANY_ID ?? 1)
+export const COMPANY_ID = Number(import.meta.env.VITE_COMPANY_ID ?? 3)
 
 // Боевой источник номера — MAX (`requestContact`, см. @/composables/useMessenger).
 // Тестовый номер нужен только для отладки в браузере, где мессенджера нет.
