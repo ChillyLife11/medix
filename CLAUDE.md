@@ -121,7 +121,7 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
   пока связка не появится.
 
 > ⚠️ **API: по факту работаем по СТАРЫМ (React) путям.** Хост — `VITE_API_HOST`
-> (сейчас `https://dental-web.pro`). Новый контракт из `Документация_API.md`
+> (сейчас `https://medix.amgs.online`). Новый контракт из `Документация_API.md`
 > (ресурсы во множественном числе, id в пути) живой сервер не отдаёт, поэтому в
 > коде живут только эти пути:
 > - `GET /branch/index` — филиалы **с вложенными `services[]`, `coworkers[]` и
@@ -214,7 +214,7 @@ requestPhone() }`. Глобал `window.WebApp` читаем **один раз �
 и картинка из `public/images`). Клиент из `by-phone`/`check-chat-id` приходит с
 **плоскими** `first_name`/`last_name`/`avatar` (не во вложенном `profile`, как у
 сотрудников) — `profileName()` читает оба варианта. Аватара может не быть, но
-поле не пустое: бэкенд отдаёт голый хост (`https://dental-web.pro/`), склеив
+поле не пустое: бэкенд отдаёт голый хост (`https://medix.amgs.online/`), склеив
 базу с пустым путём, — такую ссылку считаем отсутствующей.
 
 Дальше номер уходит в обычный вход: `signIn(phone)` ищет клиента
@@ -287,7 +287,7 @@ MAX однажды отдаст неизвестный `platform`, `isMax` ст�
 ### Деплой (сервер клиники)
 `.github/workflows/ci.yml` на пуш в `main` и `pre-prod` собирает проект, кладёт
 `dist` в zip, заливает архив по ssh в `<SERVER_PATH>/uploads/` и дёргает
-`GET https://dental-web.pro/company/unzip?company_id=&artifact_name=` — распаковку
+`GET https://medix.amgs.online/company/unzip?company_id=&artifact_name=` — распаковку
 делает бэкенд. Адреса, ключ и `COMPANY_ID` лежат в секретах репозитория.
 GitHub Pages больше нет (`deploy.yml` удалён), `VITE_API_BASE` в сборку не
 передаётся — запросы идут на `/api`.

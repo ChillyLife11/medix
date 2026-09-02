@@ -96,10 +96,10 @@ jobs:
           ARCHIVE_NAME: ${{ steps.get_archive.outputs.ARCHIVE_FILE }}
         run: |
           echo "Name: $ARCHIVE_NAME"
-          echo "Sending GET request to: https://dental-web.pro/company/unzip?company_id=${{ secrets.COMPANY_ID }}&artifact_name=$ARCHIVE_NAME"
+          echo "Sending GET request to: https://medix.amgs.online/company/unzip?company_id=${{ secrets.COMPANY_ID }}&artifact_name=$ARCHIVE_NAME"
           
           # Явно указываем метод GET с помощью -G или -X GET
-          curl -G "https://dental-web.pro/company/unzip" \
+          curl -G "https://medix.amgs.online/company/unzip" \
             --data-urlencode "company_id=${{ secrets.COMPANY_ID }}" \
             --data-urlencode "artifact_name=$ARCHIVE_NAME" \
             --fail \

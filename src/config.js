@@ -23,7 +23,7 @@ export const DEBUG_HTTP = false
 
 // Картинки приходят путями вида /uploads/... — их нужно префиксовать хостом бэка
 // (прокси в dev настроен только на /api).
-export const MEDIA_BASE = import.meta.env.VITE_API_HOST ?? 'https://dental-web.pro'
+export const MEDIA_BASE = import.meta.env.VITE_API_HOST ?? 'https://medix.amgs.online'
 
 export function fileUrl(path) {
 	if (!path) return ''

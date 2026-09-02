@@ -8,7 +8,7 @@ export default defineConfig(({ command, mode }) => {
 	// Хост бэкенда берём из .env (VITE_API_HOST), чтобы он был в одном месте
 	// с MEDIA_BASE в src/config.js.
 	const env = loadEnv(mode, process.cwd(), 'VITE_')
-	const apiHost = env.VITE_API_HOST ?? 'https://dental-web.pro'
+	const apiHost = env.VITE_API_HOST ?? 'https://medix.amgs.online'
 	const companyId = env.VITE_COMPANY_ID ?? '1'
 	// Хост, с которого раздаются файлы сборки. По умолчанию тот же, что у API.
 	const assetHost = env.VITE_ASSET_HOST ?? apiHost

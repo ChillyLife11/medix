@@ -19,7 +19,7 @@ function profileName(account) {
 }
 
 // Аватар клиента с бэкенда. Когда картинки нет, поле не пустое: приходит голый
-// хост (`https://dental-web.pro/`) — бэкенд склеил базу с пустым путём. Такую
+// хост (`https://medix.amgs.online/`) — бэкенд склеил базу с пустым путём. Такую
 // ссылку показывать нечем, поэтому считаем её отсутствующей.
 function profilePhoto(account) {
 	const raw = account?.avatar || account?.profile?.avatar || ''

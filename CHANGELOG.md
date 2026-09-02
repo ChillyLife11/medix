@@ -5,6 +5,14 @@
 Формат — [Keep a Changelog 1.0.0](https://keepachangelog.com/en/1.0.0/),
 версионирование — [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.53] - 2026-09-02
+
+### Changed
+
+- Боевой хост бэкенда — `https://medix.amgs.online`: на него теперь смотрят
+  `VITE_API_HOST` (dev-прокси `/api`, картинки, база сборки
+  `<host>/max/app-<company_id>/`) и деплой в `ci.yml` (`company/unzip`).
+
 ## [0.1.52] - 2026-08-29
 
 ### Fixed
