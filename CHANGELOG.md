@@ -5,6 +5,14 @@
 Формат — [Keep a Changelog 1.0.0](https://keepachangelog.com/en/1.0.0/),
 версионирование — [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.55] - 2026-09-02
+
+### Changed
+
+- К спискам добавлен `filter[company_id]`: `branch/index` и `appointment/index`
+  (у `promo/index` он был). Без фильтра бэкенд отдавал данные всех клиник —
+  на общем сервере это чужие филиалы, врачи и записи.
+
 ## [0.1.54] - 2026-09-02
 
 ### Changed

@@ -1,7 +1,9 @@
 import { api } from '@/api/http'
+import { COMPANY_ID } from '@/config'
 import { LEAD_MS } from '@/composables/useBooking'
 
 // Филиалы клиники. Требует авторизации (Bearer).
+// Без filter[company_id] бэкенд отдаёт филиалы всех клиник разом.
 // Элемент: { id, title, address, company_id, services[], coworkers[] } —
 // услуги и сотрудники филиала приходят вложенными, отдельных запросов нет.
 // Сотрудник: { id, username, status, services[], profile: { first_name,
@@ -24,7 +26,7 @@ export function dropBranches() {
 export function getBranches() {
 	if (!request) {
 		request = api
-			.get('/branch/index')
+			.get('/branch/index', { params: { 'filter[company_id]': COMPANY_ID } })
 			.then((r) => (branches = r.data ?? []))
 			.catch((e) => {
 				request = null

@@ -1,10 +1,17 @@
 import { api } from '@/api/http'
+import { COMPANY_ID } from '@/config'
 
 // Записи клиента, свежие сверху.
 // Элемент: { id, date, start, end, timestamp, client, services, categories, branch }.
 export function getAppointments(clientId) {
 	return api
-		.get('/appointment/index', { params: { 'filter[client_id]': clientId, sort: '-date' } })
+		.get('/appointment/index', {
+			params: {
+				'filter[client_id]': clientId,
+				'filter[company_id]': COMPANY_ID,
+				sort: '-date',
+			},
+		})
 		.then((r) => r.data ?? [])
 }
 

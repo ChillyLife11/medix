@@ -120,11 +120,16 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
   Клиенту, заведённому по номеру, окно согласий будет показываться каждый запуск,
   пока связка не появится.
 
+> ⚠️ **`filter[company_id]` обязателен у списков.** Без него бэкенд отдаёт
+> данные всех клиник разом (просьба бэкендера, 02.09.2026) — фильтр стоит у
+> `branch/index`, `appointment/index` и `promo/index`. Клиента по номеру и по
+> chat_id по-прежнему ищем глобально: у `user/*` фильтра нет.
+>
 > ⚠️ **API: по факту работаем по СТАРЫМ (React) путям.** Хост — `VITE_API_HOST`
 > (сейчас `https://medix.amgs.online`). Новый контракт из `Документация_API.md`
 > (ресурсы во множественном числе, id в пути) живой сервер не отдаёт, поэтому в
 > коде живут только эти пути:
-> - `GET /branch/index` — филиалы **с вложенными `services[]`, `coworkers[]` и
+> - `GET /branch/index?filter[company_id]=` — филиалы **с вложенными `services[]`, `coworkers[]` и
 >   `schedule`**; отдельных запросов за услугами и врачами нет, каталог услуг
 >   собираем из этого же ответа. `schedule` — расписание филиала по датам:
 >   `{ "YYYY-MM-DD": { "<id врача>": ["09:00", …] } }`, только ближайшая неделя и
@@ -137,13 +142,13 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 > - `GET /coworker/get-schedule?user_id=&branch_id=&date=` — расписание врача;
 >   функция в `api/coworkers.js` осталась, но **сейчас не вызывается** (см. сетку
 >   времени в «решениях»);
-> - `GET /promo/index`, `GET /promo/view`;
+> - `GET /promo/index?filter[company_id]=`, `GET /promo/view`;
 > - `POST /review/create` — отзыв из окна обратной связи: `user_id` (id
 >   клиента), `company_id`, `text`. В описании метода тело — multipart/form-data,
 >   но шлём **JSON**, как и остальные методы (решение заказчика). Маршрут
 >   отвечает 405 на GET, то есть существует и без токена. Единственное место —
 >   `src/api/feedback.js`;
-> - `GET /appointment/index?filter[client_id]=&sort=-date`,
+> - `GET /appointment/index?filter[client_id]=&filter[company_id]=&sort=-date`,
 >   `POST /appointment/create`, `POST /appointment/cancel?id=`;
 > - `GET /user/check-chat-id?chat_id=` — опознание клиента по id аккаунта MAX,
 >   без авторизации. На известном отдаёт клиента с `access_token`, на неизвестном
