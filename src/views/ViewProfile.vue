@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import emblaCarouselVue from 'embla-carousel-vue'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
-import LegalDialog from '@/components/legal/LegalDialog.vue'
 import FeedbackDialog from '@/components/feedback/FeedbackDialog.vue'
 import UiTabbar from '@/components/ui/UiTabbar.vue'
 import {
@@ -26,6 +25,8 @@ import {
 } from '@lucide/vue'
 import { useBooking } from '@/composables/useBooking'
 import { useAuth } from '@/composables/useAuth'
+import { useMessenger } from '@/composables/useMessenger'
+import { appUrl } from '@/config'
 
 const router = useRouter()
 const { startBooking } = useBooking()
@@ -33,6 +34,17 @@ const { startBooking } = useBooking()
 // (см. useAuth). Если фото нет нигде, показываем заглушку из public/images.
 const { clientName, clientPhoto } = useAuth()
 const defaultPhoto = `${import.meta.env.BASE_URL}images/doctor-img.png`
+
+// «Правовая информация» — документ, который лежит рядом со сборкой, в папке
+// компании. Открываем его так же, как документы в окне согласий: внутри MAX
+// PDF не отрисовывается, а скачивается, поэтому зовём openLink() и файл
+// показывает системный браузер.
+const { openLink } = useMessenger()
+const LEGAL_DOC = appUrl('policy.pdf')
+
+function openDocument(event, url) {
+	if (openLink(url)) event.preventDefault()
+}
 
 // Две точки входа в запись — с них и начинается порядок шагов.
 function startFromBranch() {
@@ -277,7 +289,15 @@ onMounted(async () => {
 		</div>
 
 		<div class="flex flex-col items-center px-2.5 space-y-2.5">
-			<LegalDialog />
+			<a
+				:href="LEGAL_DOC"
+				target="_blank"
+				rel="noopener"
+				class="text-xl underline text-brand duration-60 active:scale-[0.96]"
+				@click="openDocument($event, LEGAL_DOC)"
+			>
+				Правовая информация
+			</a>
 			<FeedbackDialog />
 		</div>
 

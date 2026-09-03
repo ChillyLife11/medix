@@ -113,7 +113,7 @@ function submit() {
 
 		<UiBtn
 			:disabled="!selected"
-			class="sticky bottom-7.5 left-0 mt-auto mb-5"
+			class="sticky bottom-7.5 left-0 z-10 mt-auto mb-5"
 			fluid
 			@click="submit"
 		>

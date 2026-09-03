@@ -4,6 +4,7 @@
 
 import { computed, ref } from 'vue'
 import {
+	ACTIVE_STATUSES,
 	cancelAppointment,
 	getAppointments,
 	HISTORY_STATUSES,
@@ -96,14 +97,14 @@ export function timeRange(appointment) {
 	return [appointment.start, appointment.end].filter(Boolean).join(' - ')
 }
 
-// scope — какая половина записей нужна экрану. От неё зависит фильтр по
-// статусу в запросе: 'current' — без выполненных и отменённых (слайдер на
-// главной), 'history' — только они (экран /active), null — весь список.
+// scope — какая половина записей нужна экрану. От неё зависит список статусов
+// в запросе: 'current' — актуальные (слайдер на главной), 'history' —
+// выполненные и отменённые (экран /active), null — весь список без фильтра.
 // Деление на current/history ниже остаётся при любом scope: если бэкенд фильтр
 // не применит, экраны всё равно покажут свою половину.
-const SCOPE_FILTER = {
-	current: { exclude: HISTORY_STATUSES },
-	history: { only: HISTORY_STATUSES },
+const SCOPE_STATUSES = {
+	current: ACTIVE_STATUSES,
+	history: HISTORY_STATUSES,
 }
 
 export function useAppointments(scope = null) {
@@ -125,7 +126,7 @@ export function useAppointments(scope = null) {
 		loading.value = true
 		failed.value = false
 		try {
-			appointments.value = await getAppointments(clientId.value, SCOPE_FILTER[scope])
+			appointments.value = await getAppointments(clientId.value, SCOPE_STATUSES[scope])
 		} catch (e) {
 			console.warn('[appointments] index failed', e)
 			failed.value = true

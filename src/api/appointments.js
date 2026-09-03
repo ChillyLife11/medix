@@ -10,34 +10,24 @@ const CANCELED_STATUS = 6
 // Элемент: { id, date, start, end, timestamp, client, services, categories, branch }.
 //
 // Бэкенд отдаёт все записи клиента разом, а экранам нужны разные половины:
-// главной — актуальные, истории — выполненные и отменённые. Поэтому набор
-// статусов просим фильтром: `exclude` — какие статусы отбросить (главная
-// отбрасывает 5 и 6), `only` — какие оставить (история берёт ровно их).
-//
-// Синтаксис `filter[status][nin][]` / `[in][]` — операторы Yii-фильтра; у
-// бэкенда он не подтверждён, поэтому на ошибку запроса повторяем без фильтра
-// по статусу. Списки в любом случае делятся ещё и на клиенте
-// (isCurrent/isHistorical в useAppointments), так что молча показать чужую
-// половину экраны не могут.
+// главной — актуальные, истории — выполненные и отменённые. Поэтому нужные
+// статусы перечисляем в запросе — форму подтвердил бэкендер:
+//   ?filter[status][]=0&filter[status][]=1&…&filter[company_id]=3
+// Списки при этом делятся ещё и на клиенте (isCurrent/isHistorical в
+// useAppointments): если фильтр не сработает, экраны всё равно покажут свою
+// половину.
+export const ACTIVE_STATUSES = [0, 1, 2, 3, 4]
 export const HISTORY_STATUSES = [COMPLETE_STATUS, CANCELED_STATUS]
 
-export function getAppointments(clientId, { exclude = null, only = null } = {}) {
+export function getAppointments(clientId, statuses = null) {
 	const params = {
 		'filter[client_id]': clientId,
 		'filter[company_id]': COMPANY_ID,
 		sort: '-date',
 	}
-	if (exclude) params['filter[status][nin]'] = exclude
-	if (only) params['filter[status][in]'] = only
+	if (statuses) params['filter[status]'] = statuses
 
-	return api
-		.get('/appointment/index', { params })
-		.then((r) => r.data ?? [])
-		.catch((e) => {
-			if (!exclude && !only) throw e
-			console.warn('[appointments] фильтр по статусу не принят, берём весь список', e)
-			return getAppointments(clientId)
-		})
+	return api.get('/appointment/index', { params }).then((r) => r.data ?? [])
 }
 
 // Запись ушла в историю — она выполнена (5) или отменена (6). Делим строго по

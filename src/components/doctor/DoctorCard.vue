@@ -16,6 +16,9 @@ defineProps({
 </script>
 
 <template>
+	<!-- isolate обязателен: текстовый блок внутри лежит на z-10, а карточка без
+	     своего контекста наложения выпускала его в общий — и он перекрывал
+	     липкую кнопку внизу экрана, перехватывая тапы. -->
 	<button
 		type="button"
 		:class="
@@ -23,7 +26,7 @@ defineProps({
 				? 'border-brand shadow-accent'
 				: 'border-transparent shadow-[0px_4px_4px_rgba(0,0,0,0.12)]'
 		"
-		class="relative w-full min-h-37 overflow-hidden rounded-[30px] border bg-card-darker text-left duration-60 active:scale-[0.984]"
+		class="relative isolate w-full min-h-37 overflow-hidden rounded-[30px] border bg-card-darker text-left duration-60 active:scale-[0.984]"
 	>
 		<div class="relative z-10 py-6 pl-3 pr-44 space-y-0.5 text-gray">
 			<div class="text-15 font-semibold leading-tight">{{ surname }}</div>
