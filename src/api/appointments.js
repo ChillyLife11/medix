@@ -1,24 +1,44 @@
 import { api } from '@/api/http'
 import { COMPANY_ID } from '@/config'
 
-// Записи клиента, свежие сверху.
-// Элемент: { id, date, start, end, timestamp, client, services, categories, branch }.
-export function getAppointments(clientId) {
-	return api
-		.get('/appointment/index', {
-			params: {
-				'filter[client_id]': clientId,
-				'filter[company_id]': COMPANY_ID,
-				sort: '-date',
-			},
-		})
-		.then((r) => r.data ?? [])
-}
-
 // Статусы записи: 0 лист ожидания, 1 отправлен в МИС, 2 напоминание отправлено,
 // 4 подтверждено, 5 выполнено, 6 отменено.
 const COMPLETE_STATUS = 5
 const CANCELED_STATUS = 6
+
+// Записи клиента, свежие сверху.
+// Элемент: { id, date, start, end, timestamp, client, services, categories, branch }.
+//
+// Бэкенд отдаёт все записи клиента разом, а экранам нужны разные половины:
+// главной — актуальные, истории — выполненные и отменённые. Поэтому набор
+// статусов просим фильтром: `exclude` — какие статусы отбросить (главная
+// отбрасывает 5 и 6), `only` — какие оставить (история берёт ровно их).
+//
+// Синтаксис `filter[status][nin][]` / `[in][]` — операторы Yii-фильтра; у
+// бэкенда он не подтверждён, поэтому на ошибку запроса повторяем без фильтра
+// по статусу. Списки в любом случае делятся ещё и на клиенте
+// (isCurrent/isHistorical в useAppointments), так что молча показать чужую
+// половину экраны не могут.
+export const HISTORY_STATUSES = [COMPLETE_STATUS, CANCELED_STATUS]
+
+export function getAppointments(clientId, { exclude = null, only = null } = {}) {
+	const params = {
+		'filter[client_id]': clientId,
+		'filter[company_id]': COMPANY_ID,
+		sort: '-date',
+	}
+	if (exclude) params['filter[status][nin]'] = exclude
+	if (only) params['filter[status][in]'] = only
+
+	return api
+		.get('/appointment/index', { params })
+		.then((r) => r.data ?? [])
+		.catch((e) => {
+			if (!exclude && !only) throw e
+			console.warn('[appointments] фильтр по статусу не принят, берём весь список', e)
+			return getAppointments(clientId)
+		})
+}
 
 // Запись ушла в историю — она выполнена (5) или отменена (6). Делим строго по
 // статусу, дата тут ни при чём: «выполнено» бэкенд проставляет не сразу, и до

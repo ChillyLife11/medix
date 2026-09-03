@@ -3,7 +3,13 @@
 // на сессию нельзя (в отличие от филиалов и врачей).
 
 import { computed, ref } from 'vue'
-import { cancelAppointment, getAppointments, isCurrent, isHistorical } from '@/api/appointments'
+import {
+	cancelAppointment,
+	getAppointments,
+	HISTORY_STATUSES,
+	isCurrent,
+	isHistorical,
+} from '@/api/appointments'
 import { shortAddress } from '@/api/branches'
 import { clientId } from '@/session'
 
@@ -90,7 +96,17 @@ export function timeRange(appointment) {
 	return [appointment.start, appointment.end].filter(Boolean).join(' - ')
 }
 
-export function useAppointments() {
+// scope — какая половина записей нужна экрану. От неё зависит фильтр по
+// статусу в запросе: 'current' — без выполненных и отменённых (слайдер на
+// главной), 'history' — только они (экран /active), null — весь список.
+// Деление на current/history ниже остаётся при любом scope: если бэкенд фильтр
+// не применит, экраны всё равно покажут свою половину.
+const SCOPE_FILTER = {
+	current: { exclude: HISTORY_STATUSES },
+	history: { only: HISTORY_STATUSES },
+}
+
+export function useAppointments(scope = null) {
 	// appointments — всё, что отдал сервер. Дальше делим по статусу:
 	// current — слайдер на главной (лист ожидания, в МИС, напоминание, подтверждено),
 	// history — экран истории (только выполненные и отменённые).
@@ -109,7 +125,7 @@ export function useAppointments() {
 		loading.value = true
 		failed.value = false
 		try {
-			appointments.value = await getAppointments(clientId.value)
+			appointments.value = await getAppointments(clientId.value, SCOPE_FILTER[scope])
 		} catch (e) {
 			console.warn('[appointments] index failed', e)
 			failed.value = true

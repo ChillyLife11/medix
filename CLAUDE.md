@@ -150,7 +150,11 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 >   но шлём **JSON**, как и остальные методы (решение заказчика). Маршрут
 >   отвечает 405 на GET, то есть существует и без токена. Единственное место —
 >   `src/api/feedback.js`;
-> - `GET /appointment/index?filter[client_id]=&filter[company_id]=&sort=-date`,
+> - `GET /appointment/index?filter[client_id]=&filter[company_id]=&sort=-date`
+>   плюс фильтр по статусу: главная просит `filter[status][nin][]=5&…[]=6`,
+>   история — `filter[status][in][]=5&…[]=6` (операторы Yii-фильтра, бэкендом
+>   **не подтверждены** — на ошибку запроса `api/appointments.js` повторяет без
+>   них, а деление списков на клиенте остаётся в любом случае),
 >   `POST /appointment/create`, `POST /appointment/cancel?id=`;
 > - `GET /user/check-chat-id?chat_id=&company_id=` — опознание клиента по id аккаунта MAX,
 >   без авторизации. На известном отдаёт клиента с `access_token`, на неизвестном

@@ -67,7 +67,7 @@ const webAppProbe = (() => {
 
 // Актуальные записи в слайдере: по одной на слайд, листаются стрелками.
 // Берём current, а не весь список: прошедшие и отменённые живут в истории (/active).
-const { current, loading, failed, load, cancel, canceling } = useAppointments()
+const { current, loading, failed, load, cancel, canceling } = useAppointments('current')
 // Картинки лежат в public/images — путь строим от базы сборки.
 const base = import.meta.env.BASE_URL
 

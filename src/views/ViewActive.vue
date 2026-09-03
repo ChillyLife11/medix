@@ -31,7 +31,7 @@ function repeat(appointment) {
 
 // История: только выполненные и отменённые записи. Актуальные (лист ожидания,
 // отправлено в МИС, напоминание, подтверждено) живут в слайдере на главной.
-const { history, loading, failed, load } = useAppointments()
+const { history, loading, failed, load } = useAppointments('history')
 
 onMounted(load)
 </script>
