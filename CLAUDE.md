@@ -122,8 +122,10 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 
 > ⚠️ **`filter[company_id]` обязателен у списков.** Без него бэкенд отдаёт
 > данные всех клиник разом (просьба бэкендера, 02.09.2026) — фильтр стоит у
-> `branch/index`, `appointment/index` и `promo/index`. Клиента по номеру и по
-> chat_id по-прежнему ищем глобально: у `user/*` фильтра нет.
+> `branch/index`, `appointment/index` и `promo/index`. У методов `user/*` тот же
+> смысл несёт query-параметр `company_id` (не `filter[...]`): его получают
+> `by-phone`, `check-chat-id` и `register-telegram` — база клиентов общая на все
+> клиники.
 >
 > ⚠️ **API: по факту работаем по СТАРЫМ (React) путям.** Хост — `VITE_API_HOST`
 > (сейчас `https://medix.amgs.online`). Новый контракт из `Документация_API.md`
@@ -150,13 +152,13 @@ index.html                # подключает https://st.max.ru/js/max-web-ap
 >   `src/api/feedback.js`;
 > - `GET /appointment/index?filter[client_id]=&filter[company_id]=&sort=-date`,
 >   `POST /appointment/create`, `POST /appointment/cancel?id=`;
-> - `GET /user/check-chat-id?chat_id=` — опознание клиента по id аккаунта MAX,
+> - `GET /user/check-chat-id?chat_id=&company_id=` — опознание клиента по id аккаунта MAX,
 >   без авторизации. На известном отдаёт клиента с `access_token`, на неизвестном
 >   — `null` (проверено вживую, отвечает 200 в обоих случаях);
-> - `GET /user/by-phone?phone=` — номер **query-параметром**, без «+»
+> - `GET /user/by-phone?phone=&company_id=` — номер **query-параметром**, без «+»
 >   (`79991234567`). На существующем номере отдаёт клиента с `access_token`
 >   (проверено вживую), на неизвестном — пусто;
-> - `POST /user/register-telegram?source=max` — тело JSON, см. ниже.
+> - `POST /user/register-telegram?source=max&company_id=` — тело JSON, см. ниже.
 >
 > Новый контракт — цель на будущее, но не переписывать вслепую: сверяться с тем,
 > что реально отвечает сервер (без токена всё отдаёт **401**).

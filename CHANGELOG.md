@@ -5,6 +5,15 @@
 Формат — [Keep a Changelog 1.0.0](https://keepachangelog.com/en/1.0.0/),
 версионирование — [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.56] - 2026-09-03
+
+### Changed
+
+- `user/by-phone`, `user/check-chat-id` и `user/register-telegram` получают
+  `company_id` query-параметром: база клиентов общая на все клиники, и бэкенду
+  нужно знать, в какой искать и заводить. В теле `register-telegram` поле
+  осталось как было.
+
 ## [0.1.55] - 2026-09-02
 
 ### Changed
