@@ -137,7 +137,7 @@ onMounted(async () => {
 					class="absolute inset-0 w-full h-full rounded-full object-cover object-center"
 				/>
 			</div>
-			<div class="text-2xl text-gray">{{ clientName }}</div>
+			<div class="text-2xl text-gray">{{ clientName }}1</div>
 
 			<UiLoader v-if="loading" label="Загружаем записи" class="py-2" />
 
