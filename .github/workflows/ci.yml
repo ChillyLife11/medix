@@ -94,14 +94,14 @@ jobs:
         env:
           ARCHIVE_NAME: ${{ steps.get_archive.outputs.ARCHIVE_FILE }}
         run: |
-          echo "Name: $ARCHIVE_NAME"
-          curl -G "https://medix.amgs.online/deploy/unzip" \
+          echo "Requesting: https://medix.amgs.online/company/unzip?company_id=${{ secrets.COMPANY_ID }}&artifact_name=$ARCHIVE_NAME"
+          curl -G "https://medix.amgs.online/company/unzip" \
             --data-urlencode "company_id=${{ secrets.COMPANY_ID }}" \
             --data-urlencode "artifact_name=$ARCHIVE_NAME" \
             --data-urlencode "token=${{ secrets.DEPLOY_TOKEN }}" \
-            --fail \
-            --show-error
-
+            -w "\nHTTP_STATUS=%{http_code}\n" \
+            -sS
+      
       - name: Cleanup
         run: |
           rm -f /tmp/deploy_key
