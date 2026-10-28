@@ -36,6 +36,22 @@ function profilePhoto(account) {
 // Заглушка нужна только вне мессенджера — в MAX имя есть всегда.
 const clientName = computed(() => useMessenger().userName || profileName(client.value) || 'Пациент')
 
+// ФИО по частям — для подстановки в окно подтверждения записи. Здесь порядок
+// обратный clientName: сначала карточка клиента в клинике (check-chat-id и
+// by-phone), и лишь потом аккаунт MAX — в мессенджере у людей часто ники, а в
+// записи нужно настоящее имя. Поля карточки читаем как first_name — имя,
+// last_name — фамилия; человек видит подстановку и может её поправить.
+const clientNameParts = computed(() => {
+	const card = client.value?.profile ?? client.value ?? {}
+	const max = useMessenger().user ?? {}
+	const pick = (...values) => values.map((v) => String(v ?? '').trim()).find(Boolean) ?? ''
+	return {
+		lastName: pick(card.last_name, max.last_name),
+		firstName: pick(card.first_name, max.first_name),
+		middleName: pick(card.second_name, card.middle_name),
+	}
+})
+
 // Аватар для экранов — тем же порядком. Пустая строка означает «показывайте
 // свою заглушку»: какая именно, решает экран.
 const clientPhoto = computed(() => useMessenger().userPhoto || profilePhoto(client.value))
@@ -103,5 +119,5 @@ export function useAuth() {
 		clearSession()
 	}
 
-	return { token, client, clientName, clientPhoto, checkAuth, signIn, logout }
+	return { token, client, clientName, clientNameParts, clientPhoto, checkAuth, signIn, logout }
 }
