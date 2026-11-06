@@ -21,6 +21,8 @@ import UiPageTitle from '@/components/ui/UiPageTitle.vue'
 import UiLoader from '@/components/ui/UiLoader.vue'
 import BookingConfirm from '@/components/booking/BookingConfirm.vue'
 import { createAppointment } from '@/api/appointments'
+import { useAuth } from '@/composables/useAuth'
+import { clientId } from '@/session'
 import {
 	getBranch,
 	loadedBranch,
@@ -33,8 +35,20 @@ import { apiErrorMessage } from '@/api/http'
 import { LEAD_MS, useBooking } from '@/composables/useBooking'
 
 const router = useRouter()
-const { branchId, serviceId, masterId, date, time, reset, appointmentPayload, isComplete } =
-	useBooking()
+const { clientNameParts, rememberPatient } = useAuth()
+const {
+	patient,
+	fillPatient,
+	patientReady,
+	branchId,
+	serviceId,
+	masterId,
+	date,
+	time,
+	reset,
+	appointmentPayload,
+	isComplete,
+} = useBooking()
 
 // Записаться можно только начиная с сегодняшнего дня.
 const minDate = today(getLocalTimeZone())
@@ -221,6 +235,7 @@ function review() {
 	if (!selectedDate.value || !selectedTime.value) return
 	date.value = selectedDate.value.toString()
 	time.value = selectedTime.value
+	fillPatient(clientNameParts.value)
 	saveError.value = ''
 	confirming.value = true
 }
@@ -248,6 +263,11 @@ const success = ref(false)
 // Финал флоу: фиксируем выбор и создаём запись. При успехе состояние сбрасываем,
 // чтобы следующая запись начиналась с чистого листа.
 async function submit() {
+	if (saving.value) return
+	if (!patientReady()) {
+		saveError.value = 'Укажите фамилию и имя; каждое поле ФИО — до 255 символов.'
+		return
+	}
 	if (!isComplete()) {
 		saveError.value = 'Не хватает данных для записи — пройдите шаги заново.'
 		return
@@ -255,8 +275,14 @@ async function submit() {
 
 	saving.value = true
 	saveError.value = ''
+	const ownerId = clientId.value
+	const payload = appointmentPayload()
 	try {
-		await createAppointment(appointmentPayload())
+		await createAppointment(payload)
+		if (clientId.value !== ownerId) return
+		const fields = { first_name: payload.first_name, last_name: payload.last_name }
+		if (payload.second_name) fields.second_name = payload.second_name
+		rememberPatient(fields, ownerId)
 		reset()
 		confirming.value = false
 		success.value = true
@@ -409,6 +435,9 @@ async function submit() {
 
 		<BookingConfirm
 			v-model:open="confirming"
+			v-model:first-name="patient.firstName"
+			v-model:last-name="patient.lastName"
+			v-model:middle-name="patient.middleName"
 			:rows="summary"
 			:saving="saving"
 			:error="saveError"

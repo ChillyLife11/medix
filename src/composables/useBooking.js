@@ -9,10 +9,11 @@
 //   master_id — id врача (из /coworker/index)
 //   branch_id — id филиала (из /branch/index)
 
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { COMPANY_ID } from '@/config'
 import { clientId } from '@/session'
 import { dropBranches } from '@/api/branches'
+import { patientNameErrors, patientNameFields, cleanNamePart } from './patientName'
 
 const flow = ref('branch')
 const branchId = ref(null)
@@ -20,6 +21,30 @@ const serviceId = ref(null)
 const masterId = ref(null)
 const date = ref(null)
 const time = ref(null)
+const patient = ref({ firstName: '', lastName: '', middleName: '' })
+let patientSeeded = false
+function clearPatient() {
+	patient.value = { firstName: '', lastName: '', middleName: '' }
+	patientSeeded = false
+}
+function fillPatient(parts = {}) {
+	if (patientSeeded) return
+	patient.value = Object.fromEntries(
+		['firstName', 'lastName', 'middleName'].map((key) => [key, cleanNamePart(parts[key])]),
+	)
+	patientSeeded = true
+}
+function patientReady() {
+	return Object.keys(patientNameErrors(patient.value)).length === 0
+}
+watch(
+	clientId,
+	() => {
+		reset()
+		clearPatient()
+	},
+	{ flush: 'sync' },
+)
 
 function reset() {
 	branchId.value = null
@@ -37,6 +62,7 @@ function reset() {
 // начинается со свежих данных.
 function startBooking(kind) {
 	reset()
+	clearPatient()
 	dropBranches()
 	flow.value = kind
 }
@@ -50,6 +76,7 @@ function isServiceFirst() {
 // осталось выбрать только дату и время. Дату и время не переносим — они в прошлом.
 function startRepeat({ branch = null, service = null, master = null } = {}) {
 	reset()
+	clearPatient()
 	dropBranches()
 	flow.value = 'branch'
 	branchId.value = branch
@@ -85,6 +112,7 @@ function appointmentPayload() {
 		status: 0,
 		services: serviceId.value ? [serviceId.value] : [],
 		source: 'max',
+		...patientNameFields(patient.value),
 	}
 }
 
@@ -102,6 +130,9 @@ function isComplete() {
 
 export function useBooking() {
 	return {
+		patient,
+		fillPatient,
+		patientReady,
 		flow,
 		branchId,
 		serviceId,

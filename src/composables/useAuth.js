@@ -3,13 +3,30 @@
 // отладочный из конфига, в прод-сборке фолбэка нет.
 // Само состояние сессии — в @/session.
 
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { getUserByChatId, getUserByPhone, registerUser } from '@/api/users'
 import { FALLBACK_PHONE, fileUrl } from '@/config'
-import { clearSession, setSession, token } from '@/session'
+import { clearSession, setSession, token, clientId } from '@/session'
 import { useMessenger } from '@/composables/useMessenger'
+import { patientNameParts } from './patientName'
 
 const client = ref(null)
+watch(
+	clientId,
+	() => {
+		client.value = null
+	},
+	{ flush: 'sync' },
+)
+const clientNameParts = computed(() => patientNameParts(client.value, useMessenger().user))
+function rememberPatient(fields, ownerId) {
+	if (clientId.value !== ownerId || !client.value) return
+	client.value = {
+		...client.value,
+		...fields,
+		...(client.value.profile ? { profile: { ...client.value.profile, ...fields } } : {}),
+	}
+}
 
 // ФИО клиента. У сотрудников оно лежит во вложенном profile (см. @/api/branches),
 // а клиент из `by-phone` / `check-chat-id` приходит с плоскими полями — читаем оба.
@@ -32,9 +49,9 @@ function profilePhoto(account) {
 	}
 }
 
-// Имя для экранов: сначала аккаунт MAX, потом карточка клиента на бэкенде.
+// Имя для экранов: сначала сохранённая карточка клиента, затем аккаунт MAX.
 // Заглушка нужна только вне мессенджера — в MAX имя есть всегда.
-const clientName = computed(() => useMessenger().userName || profileName(client.value) || 'Пациент')
+const clientName = computed(() => profileName(client.value) || useMessenger().userName || 'Пациент')
 
 // Аватар для экранов — тем же порядком. Пустая строка означает «показывайте
 // свою заглушку»: какая именно, решает экран.
@@ -103,5 +120,15 @@ export function useAuth() {
 		clearSession()
 	}
 
-	return { token, client, clientName, clientPhoto, checkAuth, signIn, logout }
+	return {
+		token,
+		client,
+		clientName,
+		clientNameParts,
+		rememberPatient,
+		clientPhoto,
+		checkAuth,
+		signIn,
+		logout,
+	}
 }
