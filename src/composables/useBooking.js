@@ -109,11 +109,9 @@ function appointmentPayload() {
 		status: 0,
 		services: serviceId.value ? [serviceId.value] : [],
 		source: 'max',
-		// ⚠️ Порядок полей — как в описании метода от бэкенда (28.10.2026, прислан
-		// для Нелип, бэкенд тот же): first_name — ФАМИЛИЯ, last_name — ИМЯ. Если в
-		// клинике фамилия и имя окажутся переставлены — менять эти две строки.
-		first_name: clean(patient.value.lastName),
-		last_name: clean(patient.value.firstName),
+		// API сохраняет поля напрямую в профиль: first_name — имя, last_name — фамилия.
+		first_name: clean(patient.value.firstName),
+		last_name: clean(patient.value.lastName),
 		second_name: clean(patient.value.middleName),
 	}
 }
