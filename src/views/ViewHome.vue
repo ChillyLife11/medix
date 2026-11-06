@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AgreeDialog from '@/components/auth/AgreeDialog.vue'
 import { useAuth } from '@/composables/useAuth'
+import { useLegalConsent } from '@/composables/useLegalConsent'
 
 const router = useRouter()
 const base = import.meta.env.BASE_URL
@@ -18,11 +19,10 @@ const MIN_SPLASH_MS = 2000
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 onMounted(async () => {
-	// Есть сохранённая сессия или телефон — сразу в профиль,
-	// иначе просим согласия и номер телефона.
+	// Legal acceptance comes only from localStorage, independently of authentication.
 	// Проверку и паузу ждём вместе: медленный ответ сплэш не удлиняет.
 	const [state] = await Promise.all([checkAuth(), wait(MIN_SPLASH_MS)])
-	if (state === 'authed') router.replace('/profile')
+	if (useLegalConsent().accepted() && state === 'authed') router.replace('/profile')
 	else agreeing.value = true
 })
 </script>

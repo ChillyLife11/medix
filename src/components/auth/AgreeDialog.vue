@@ -2,18 +2,21 @@
 // Согласия на обработку ПДн и запрос номера — окно поверх сплэша.
 // Отдельной страницы у согласий нет: пока клиент не опознан, под окном остаётся
 // экран загрузки, а закрыть окно нельзя — без номера дальше всё равно не пройти.
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle } from 'reka-ui'
 import { ExternalLink } from '@lucide/vue'
 import UiBtn from '@/components/ui/UiBtn.vue'
 import { useAuth } from '@/composables/useAuth'
+import { useLegalConsent } from '@/composables/useLegalConsent'
 import { useMessenger } from '@/composables/useMessenger'
 import { FALLBACK_PHONE } from '@/config'
 
 const open = defineModel('open', { type: Boolean, default: false })
 const emit = defineEmits(['signed'])
 
-const { signIn } = useAuth()
+const { signIn, token } = useAuth()
+const consent = useLegalConsent()
+const legalAccepted = ref(consent.accepted())
 const { isMax, requestPhone, openLink } = useMessenger()
 
 // Текст под кнопкой, если номер получить не удалось. Отказ — не ошибка
@@ -28,11 +31,10 @@ const PHONE_ERRORS = {
 const submitting = ref(false)
 const error = ref('')
 
-// Ознакомление с политикой обязательно — без него кнопка заблокирована,
-// поэтому отметка стоит по умолчанию (снять её человек может сам).
-// Рекламная рассылка добровольна, поэтому вход не держит.
-const policy_read = ref(true)
-const marketing_agree = ref(false)
+// Legal acceptance is independent of the authenticated session.
+const policy_read = ref(legalAccepted.value)
+const marketing_agree = ref(legalAccepted.value)
+const agreed = computed(() => policy_read.value && marketing_agree.value)
 
 // Документы клиники: политика и согласие на рассылку.
 const DOCS = {
@@ -53,10 +55,19 @@ function openDocument(event, url) {
 // Согласие на обработку ПДн даётся самим фактом продолжения (так написано в
 // заголовке), поэтому отдельной галочки под него нет.
 async function submit() {
-	if (submitting.value || !policy_read.value) return
+	if (submitting.value || !agreed.value) return
 	submitting.value = true
 	error.value = ''
 	try {
+		if (!consent.save(policy_read.value, marketing_agree.value)) {
+			error.value = 'Не удалось сохранить согласия. Проверьте доступ к хранилищу приложения.'
+			return
+		}
+		legalAccepted.value = true
+		if (token.value) {
+			emit('signed')
+			return
+		}
 		const { phone, reason } = await requestPhone()
 		const userPhone = phone ?? (isMax ? null : FALLBACK_PHONE)
 		if (!userPhone) {
@@ -89,10 +100,11 @@ async function submit() {
 				@interact-outside.prevent
 			>
 				<DialogTitle class="max-w-65 text-center text-base font-normal leading-[1.2]">
-					Продолжая, Вы даете согласие на обработку персональных данных:
+					<span v-if="legalAccepted">Поделитесь номером телефона, чтобы войти</span>
+					<span v-else>Продолжая, Вы даете согласие на обработку персональных данных:</span>
 				</DialogTitle>
 
-				<div class="w-full mt-4 space-y-2.5 leading-[1.2] text-gray">
+				<div v-if="!legalAccepted" class="w-full mt-4 space-y-2.5 leading-[1.2] text-gray">
 					<label class="flex items-start">
 						<input v-model="policy_read" type="checkbox" class="peer" hidden />
 						<span
@@ -139,8 +151,8 @@ async function submit() {
 
 				<div v-if="error" class="mt-5 text-13 text-center text-gray">{{ error }}</div>
 
-				<UiBtn :disabled="submitting || !policy_read" class="w-43 mt-5" @click="submit">
-					{{ submitting ? 'Проверяем…' : 'Продолжить' }}
+				<UiBtn :disabled="submitting || !agreed" class="w-43 mt-5" @click="submit">
+					{{ submitting ? 'Проверяем…' : 'Отправить' }}
 				</UiBtn>
 			</DialogContent>
 		</DialogPortal>
